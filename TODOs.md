@@ -1,0 +1,5 @@
+- [ ] add new class `cereal boxes` to the dataset
+- [ ] support training model in Google Colab
+- [ ] fine tuning the object dectection models
+- [ ] include face recognition to the project
+- [ ] create script for project presentation
