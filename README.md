@@ -11,9 +11,11 @@ Install python packages and prepare workspace
 ```
 
 ## Build a dataset for object dections
-check notebooks: [building_dataset.ipynb](https://github.com/kk17/supermark_det/blob/main/notebooks/building_dataset.ipynb)
+
+Use fiftyone to get the require class from open image v6 dataset and build a TFOjbectDetectionDataset. Check notebooks: [building_dataset.ipynb](https://github.com/kk17/supermark_det/blob/main/notebooks/building_dataset.ipynb)
 
 ## Train object detection model
+Use TensorFlow Object Detection API to do transfer learning.
 
 ```bash
 cd workspace
