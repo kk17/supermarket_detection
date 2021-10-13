@@ -10,7 +10,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 
 # Install python packages
-pip install -r ${DIR}requirements.txt
+pip install -r ${DIR}/requirements.txt
 
 TENSORFLOW_MODEL_GARDEN_DIR="${DIR}/tensorflow_model_garden"
 WORKSPACE_DIR="${DIR}/workspace"
