@@ -6,4 +6,9 @@ workspace/data/*
 !workspace/data/*.pbtxt
 !workspace/pre_trained_models/
 workspace/pre_trained_models/*
+!workspace/models/
+workspace/models/*
+!workspace/exported_models/
+workspace/exported_models/*
 !workspace/**/*.sh
+!workspace/**/.gitkeep
