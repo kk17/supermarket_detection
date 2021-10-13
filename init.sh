@@ -71,7 +71,7 @@ python -m pip install .
 
 echo "Installation complete"
 
-echo "Copy scripts for trainning and exporting model"
+echo "Copy scripts for training and exporting model"
 SCRIPT_PATH=research/object_detection/model_main_tf2.py
 cp ${TENSORFLOW_MODEL_GARDEN_DIR}/${SCRIPT_PATH} ${WORKSPACE_DIR}
 
