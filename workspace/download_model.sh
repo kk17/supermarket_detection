@@ -21,11 +21,13 @@ if [ ! -f $MODEL_FILE ]; then
     wget $MODEL_URL
     tar -xvf ${MODEL_FILE}
     rm ${MODEL_FILE}
+    MODEL_NAME=$(basename $MODEL_FILE .tar.gz)
+    SIMPLE_MODEL_NAME=${MODEL_FILE%_coco17*} # retain the part before the _coco17
+    mv $MODEL_NAME $SIMPLE_MODEL_NAME
 fi
 
 cd $DIR
-MODEL_NAME=$(basename $MODEL_FILE .tar.gz)
-PRETRAINED_MODEL_DIR=pre_trained_models/$MODEL_NAME
-MODEL_DIR=models/$MODEL_NAME/v1
+PRETRAINED_MODEL_DIR=pre_trained_models/$SIMPLE_MODEL_NAME
+MODEL_DIR=models/$SIMPLE_MODEL_NAME/v1
 mkdir -p $MODEL_DIR
 cp $PRETRAINED_MODEL_DIR/pipeline.config $MODEL_DIR/pipeline.config
