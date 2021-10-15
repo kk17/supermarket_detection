@@ -1,9 +1,11 @@
-- [ ] add new class `cereal boxes` to the dataset
-- [ ] support training model in Google Colab
-  - [ ] refactor init script, install tensorflow model
-  - [ ] refactor notebook to save datasets into google drive
-  - [ ] refactor notebook to train model in google colab
-  - [ ] refactor notebook to export model into google drive
-- [ ] fine tuning the object dectection models
-- [ ] include face recognition to the project
+- [ ] add new class `cereal boxes` to the dataset: linlin (train: >50, val >20, test> 10)
+  - [ ] download image from google search, load into fiftyone and do labeling,  merge and export dataset 
+- [x] support training model in Google Colab: chengdi, kyle
+  - [x] refactor init script, install tensorflow model
+  - [x] refactor notebook to save datasets into google drive
+  - [x] refactor notebook to train model in google colab
+  - [x] refactor notebook to export model into google drive
+- [ ] fine tuning the object dectection models  chengdi, kyle
+  - [ ] https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/tf2_detection_zoo.md
+- [ ] include face recognition to the project: gab
 - [ ] create script for project presentation
