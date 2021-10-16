@@ -22,6 +22,11 @@ if [ $# -gt 2 ]; then
     MODEL_VERSION=$2
 fi
 
+RESTART_CHECKPOINT=${RESTART_CHECKPOINT:-true}
+if [ "$RESTART_CHECKPOINT" = "true" ]; then
+    rm -rf models/${MODEL_NAME}/${MODEL_VERSION}/checkpoint train chpt-*
+fi
+
 SCRIPT_PATH=$DIR/../tensorflow_model_garden/research/object_detection/model_main_tf2.py
 python ${SCRIPT_PATH} \
   --pipeline_config_path=models/${MODEL_NAME}/${MODEL_VERSION}/pipeline.config\
