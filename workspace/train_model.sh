@@ -22,7 +22,7 @@ if [ $# -gt 2 ]; then
     MODEL_VERSION=$2
 fi
 
-RESTART_CHECKPOINT=${RESTART_CHECKPOINT:-true}
+RESTART_CHECKPOINT=${RESTART_CHECKPOINT:-false}
 if [ "$RESTART_CHECKPOINT" = "true" ]; then
     rm -rf models/${MODEL_NAME}/${MODEL_VERSION}/checkpoint train chpt-*
 fi
