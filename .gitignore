@@ -1,7 +1,10 @@
 tensorflow_model_garden
+*.pyc
 *.jpg
 *.records
+.env
 workspace/*
+!workspace/*.py
 !workspace/data/
 workspace/data/*
 !workspace/data/*.pbtxt

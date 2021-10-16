@@ -71,10 +71,6 @@ python -m pip install .
 
 echo "Installation complete"
 
-echo "Copy scripts for training and exporting model"
-SCRIPT_PATH=research/object_detection/model_main_tf2.py
-cp ${TENSORFLOW_MODEL_GARDEN_DIR}/${SCRIPT_PATH} ${WORKSPACE_DIR}
 
-SCRIPT_PATH=research/object_detection/exporter_main_v2.py
-cp ${TENSORFLOW_MODEL_GARDEN_DIR}/${SCRIPT_PATH} ${WORKSPACE_DIR}
-
+# pip install cython
+# pip install git+https://github.com/philferriere/cocoapi.git#subdirectory=PythonAPI

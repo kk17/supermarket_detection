@@ -5,7 +5,13 @@ from object_detection.utils import config_util
 from object_detection.builders import model_builder
 
 
-def load_model_from_checkpoint(config_path, checkpoint_path):
+def load_saved_model(model_path):
+    # Load saved model and build the detection function
+    detect_fn = tf.saved_model.load(model_path)
+    return detect_fn
+
+
+def load_model_from_checkpoint(config_path, checkpoint_path, checkpoint_no=0):
     # Load pipeline config and build a detection model
     configs = config_util.get_configs_from_pipeline_file(config_path)
     model_config = configs['model']
@@ -13,7 +19,7 @@ def load_model_from_checkpoint(config_path, checkpoint_path):
 
     # Restore checkpoint
     ckpt = tf.compat.v2.train.Checkpoint(model=detection_model)
-    ckpt.restore(os.path.join(checkpoint_path, 'ckpt-0')).expect_partial()
+    ckpt.restore(os.path.join(checkpoint_path, f'ckpt-{checkpoint_no}')).expect_partial()
     return detection_model
 
 @tf.function

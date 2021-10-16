@@ -31,3 +31,6 @@ PRETRAINED_MODEL_DIR=pre_trained_models/$SIMPLE_MODEL_NAME
 MODEL_DIR=models/$SIMPLE_MODEL_NAME/v1
 mkdir -p $MODEL_DIR
 cp $PRETRAINED_MODEL_DIR/pipeline.config $MODEL_DIR/pipeline.config
+
+cd $DIR
+python ./update_pipeline_config.py
