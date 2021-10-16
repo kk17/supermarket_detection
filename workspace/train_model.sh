@@ -24,8 +24,10 @@ fi
 
 RESTART_CHECKPOINT=${RESTART_CHECKPOINT:-false}
 if [ "$RESTART_CHECKPOINT" = "true" ]; then
-    rm -rf models/${MODEL_NAME}/${MODEL_VERSION}/checkpoint train chpt-*
+    cd models/${MODEL_NAME}/${MODEL_VERSION}
+    rm -rf checkpoint train ckpt-*
 fi
+cd $DIR
 
 SCRIPT_PATH=$DIR/../tensorflow_model_garden/research/object_detection/model_main_tf2.py
 python ${SCRIPT_PATH} \
