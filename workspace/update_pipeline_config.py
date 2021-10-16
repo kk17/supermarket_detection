@@ -66,7 +66,7 @@ def main():
 
     workspace_dir = os.path.abspath(os.path.dirname(__file__))
     pipeline_config = os.path.join(workspace_dir, 'models', model_name, model_version, 'pipeline.config')
-    fine_tune_checkpoint = os.path.join(workspace_dir, 'pre_trained_models', model_name, 'checkpoint', f'ckpt-{checkpoint_num}')
+    fine_tune_checkpoint = os.path.join('pre_trained_models', model_name, 'checkpoint', f'ckpt-{checkpoint_num}')
 
     print(f'pipeline_config: {pipeline_config}')
     args = {
