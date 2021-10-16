@@ -13,7 +13,7 @@ if [ -f .env ]; then
     source .env
 fi
 DRIVER_DIR_PATH=${DRIVER_DIR_PATH:-/content/drive/MyDrive/supermarket_detection_workspace}
-SYNC_FROM_DRIVE=${SYNC_FROM_DRIVE:-"true"}
+SYNC_FROM_DRIVE=${SYNC_FROM_DRIVE:-"false"}
 SYNC_TO_DRIVE=${SYNC_TO_DRIVE:-"false"}
 DELETE_NO_EXIST=${DELETE_NO_EXIST:-"false"}
 SYNC_SUB_DIR=${SYNC_SUB_DIR:-.}
