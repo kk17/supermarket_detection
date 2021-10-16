@@ -14,7 +14,7 @@ if [ -f .env ]; then
 fi
 DRIVER_DIR_PATH=${DRIVER_DIR_PATH:-/content/drive/MyDrive/supermarket_detection_workspace}
 SYNC_FROM_DRIVE=${SYNC_FROM_DRIVE:-"true"}
-SYNC_TO_DRIVE=${SYNC_FROM_DRIVE:-"false"}
+SYNC_TO_DRIVE=${SYNC_TO_DRIVE:-"false"}
 DELETE_NO_EXIST=${DELETE_NO_EXIST:-"false"}
 SYNC_SUB_DIR=${SYNC_SUB_DIR:-.}
 
@@ -51,12 +51,14 @@ fi
 
 if [ "$SYNC_FROM_DRIVE" = "true" ]; then
     for DIR in ${SYNC_SUB_DIRS[@]}; do
-        rsync  ${RSYNC_ARGS[@]} $DRIVER_DIR_PATH/$DIR ./$DIR
+        echo "sync  $DIR from dirve"
+        rsync  ${RSYNC_ARGS[@]} $DRIVER_DIR_PATH/$DIR/ ./$DIR/
     done
 fi
 
 if [ "$SYNC_TO_DRIVE" = "true" ]; then
     for SYNC_SUB_DIR in ${SYNC_SUB_DIRS[@]}; do
-        rsync ${RSYNC_ARGS[@]} ./$DIR $DRIVER_DIR_PATH/$DIR  
+        echo "sync  $DIR to dirve"
+        rsync ${RSYNC_ARGS[@]} ./$DIR/ $DRIVER_DIR_PATH/$DIR/
     done
 fi
