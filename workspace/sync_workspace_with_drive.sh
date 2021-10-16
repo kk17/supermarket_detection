@@ -57,7 +57,7 @@ if [ "$SYNC_FROM_DRIVE" = "true" ]; then
 fi
 
 if [ "$SYNC_TO_DRIVE" = "true" ]; then
-    for SYNC_SUB_DIR in ${SYNC_SUB_DIRS[@]}; do
+    for DIR in ${SYNC_SUB_DIRS[@]}; do
         echo "sync  $DIR to dirve"
         rsync ${RSYNC_ARGS[@]} ./$DIR/ $DRIVER_DIR_PATH/$DIR/
     done
