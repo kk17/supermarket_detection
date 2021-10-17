@@ -1,0 +1,25 @@
+item {
+    name: "Apple",
+    id: 1,
+    display_name: "Apple"
+}
+item {
+    name: "Banana",
+    id: 2,
+    display_name: "Banana"
+}
+item {
+    name: "Book",
+    id: 3,
+    display_name: "Book"
+}
+item {
+    name: "Cerealbox",
+    id: 4,
+    display_name: "Cerealbox"
+}
+item {
+    name: "Orange",
+    id: 5,
+    display_name: "Orange"
+}
