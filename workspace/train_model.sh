@@ -23,6 +23,21 @@ if [ $# -gt 2 ]; then
 fi
 
 RESTART_CHECKPOINT=${RESTART_CHECKPOINT:-false}
+POSITION_ARGS=("")
+while [[ $# > 0 ]]; do
+    case "$1" in
+    --restart)
+        RESTART_CHECKPOINT=true
+        shift
+        ;;
+    *) # unknown flag/switch
+        POSITION_ARGS+=("$1")
+        shift
+        ;;
+    esac
+done
+set -- "${POSITION_ARGS[@]}"
+
 if [ "$RESTART_CHECKPOINT" = "true" ]; then
     cd models/${MODEL_NAME}/${MODEL_VERSION}
     rm -rf checkpoint train ckpt-*
