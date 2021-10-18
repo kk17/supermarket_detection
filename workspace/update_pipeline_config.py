@@ -56,9 +56,15 @@ def update_pipeline_config_file(
     config_util.save_pipeline_config(config_util.create_pipeline_proto_from_configs(configs), output_dir)
 
 def main():
+    from dotenv import load_dotenv
+    os.chdir(os.path.abspath(os.path.dirname(__file__)))
+    
+    load_dotenv()
+
     model_name = os.environ.get('MODEL_NAME', '')
     model_version = os.environ.get('MODEL_VERSION', 'v1')
     checkpoint_num = os.environ.get('CHECKPOINT_NUM', '0')
+    dataset_dir = os.environ.get('DATASET_DIR', 'data/custom01')
 
     if not model_name:
         print('model_name must be specified')
@@ -67,15 +73,26 @@ def main():
     workspace_dir = os.path.abspath(os.path.dirname(__file__))
     pipeline_config = os.path.join(workspace_dir, 'models', model_name, model_version, 'pipeline.config')
     fine_tune_checkpoint = os.path.join('pre_trained_models', model_name, 'checkpoint', f'ckpt-{checkpoint_num}')
+    train_input_path = os.path.join(dataset_dir, "train.tfrecord")
+    label_map_path = os.path.join(dataset_dir, "label_map.pbtxt")
+    eval_input_path = os.path.join(dataset_dir, "valid.tfrecord")
+
+    os.chdir(os.path.abspath(os.path.dirname(__file__)))
+    import sys
+    sys.path.append('..')
+    from supermarket_detection import model_utils
+
+    category_index = model_utils.create_category_index(label_map_path)
+    num_classes = len(category_index)
 
     print(f'pipeline_config: {pipeline_config}')
     args = {
-        'num_classes': 4,
+        'num_classes': num_classes,
         'fine_tune_checkpoint': fine_tune_checkpoint,
-        'train_input_path': "data/train.records",
-        'train_label_map_path': "data/label_map.pbtxt",
-        'eval_input_path': "data/evaluation.records",
-        'eval_label_map_path': "data/label_map.pbtxt",
+        'train_input_path': train_input_path,
+        'train_label_map_path': label_map_path,
+        'eval_input_path': eval_input_path,
+        'eval_label_map_path': label_map_path,
     }
 
     print(f'args: {args}')
