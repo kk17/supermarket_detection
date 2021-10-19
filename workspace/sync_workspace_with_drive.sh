@@ -15,7 +15,7 @@ fi
 DRIVER_DIR_PATH=${DRIVER_DIR_PATH:-/content/drive/MyDrive/supermarket_detection_workspace}
 SYNC_FROM_DRIVE=${SYNC_FROM_DRIVE:-"false"}
 SYNC_TO_DRIVE=${SYNC_TO_DRIVE:-"false"}
-DELETE_NO_EXIST=${DELETE_NO_EXIST:-"false"}
+DELETE_NO_EXIST=${DELETE_NO_EXIST:-"true"}
 SYNC_SUB_DIR=${SYNC_SUB_DIR:-.}
 
 SYNC_SUB_DIRS=()
@@ -29,8 +29,8 @@ while [[ $# > 0 ]]; do
         SYNC_TO_DRIVE=true
         shift
         ;;
-    --delete)
-        DELETE_NO_EXIST=true
+    --no-delete)
+        DELETE_NO_EXIST=false
         shift
         ;;
     *) # unknown flag/switch
