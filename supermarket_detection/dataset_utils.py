@@ -206,3 +206,24 @@ def add_prediction_for_fiftyone_dataset(dataset_or_view,
             # Save predictions to dataset
             sample["predictions"] = fo.Detections(detections=detections)
             sample.save()
+
+
+def load_tfrecord_as_fiftyone_dataset(dataset_dir,
+                                      tf_records_path=None,
+                                      images_dir=None):
+    # dataset_dir (None) – the dataset directory
+    # images_dir (None) – the directory in which the images will be written. If not provided, the images will be unpacked into dataset_dir
+    # tf_records_path (None) –
+    # an optional parameter that enables explicit control over the location of the TF records. Can be any of the following:
+    # a filename like "tf.records" or glob pattern like "*.records-*-of-*" specifying the location of the records in dataset_dir
+    # an absolute filepath or glob pattern for the records. In this case, dataset_dir has no effect on the location of the records
+    # If None, the parameter will default to *record*
+    # image_format (None) – the image format to use to write the images to disk. By default, fiftyone.config.default_image_ext is used
+    # max_samples (None) – a maximum number of samples to import. By default, all samples are imported
+    dataset = fo.Dataset.from_dir(
+        dataset_dir=dataset_dir,
+        images_dir=images_dir,
+        tf_records_path=tf_records_path,
+        dataset_type=fo.types.TFObjectDetectionDataset,
+    )
+    return dataset

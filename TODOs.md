@@ -6,6 +6,9 @@
   - [x] refactor notebook to train model in google colab
   - [x] refactor notebook to export model into google drive
 - [ ] fine tuning the object dectection models  chengdi, kyle
+  - [ ] try evaluation a pretrian model directly 
+    - [ ] fiftyone [Google Colab](https://colab.research.google.com/github/voxel51/fiftyone/blob/v0.13.3/docs/source/tutorials/evaluate_detections.ipynb)
+    - [ ] tensorflow model garden 
   - [ ] https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/tf2_detection_zoo.md
 - [ ] include face recognition to the project: gab
 - [ ] create script for project presentation
