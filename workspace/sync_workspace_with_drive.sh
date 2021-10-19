@@ -44,7 +44,7 @@ if [ ${#SYNC_SUB_DIRS[@]} -eq 0 ]; then
     SYNC_SUB_DIRS=($SYNC_SUB_DIR)
 fi
 
-RSYNC_ARGS=(-rtuv --exclude '.env' --exclude '*.sh' --exclude '*.py')
+RSYNC_ARGS=(-rtuv --exclude '.env')
 if [ $DELETE_NO_EXIST = "true" ]; then
     RSYNC_ARGS+=(--delete)
 fi
