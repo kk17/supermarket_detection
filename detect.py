@@ -7,17 +7,21 @@ from object_detection.utils import visualization_utils as viz_utils
 
 MODEL_NAME = 'ssd_resnet101_v1_fpn_640x640'
 MODELS_DIR = 'workspace/pre_trained_models'
-PATH_TO_CKPT = os.path.join(MODELS_DIR, os.path.join(MODEL_NAME, 'checkpoint/'))
-PATH_TO_CFG = os.path.join(MODELS_DIR, os.path.join(MODEL_NAME, 'pipeline.config'))
 LABEL_FILENAME = 'mscoco_label_map.pbtxt'
 PATH_TO_LABELS = os.path.join(MODELS_DIR, os.path.join(MODEL_NAME, LABEL_FILENAME))
+
+MODEL_NAME = 'ssd_mobilenet_v2_fpnlite_320x320_coco17_tpu-8/v1'
+MODELS_DIR = 'workspace/exported_models'
+PATH_TO_CKPT = os.path.join(MODELS_DIR, os.path.join(MODEL_NAME, 'checkpoint/'))
+PATH_TO_CFG = os.path.join(MODELS_DIR, os.path.join(MODEL_NAME, 'pipeline.config'))
+PATH_TO_LABELS = 'workspace/data/custom01/label_map.pbtxt'
 
 # TF_CPP_MIN_LOG_LEVEL = '2'
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = TF_CPP_MIN_LOG_LEVEL
 
 # tf.get_logger().setLevel('ERROR') 
 print("Loading model")
-detection_model = model_utils.load_model_from_checkpoint(PATH_TO_CFG, PATH_TO_CKPT)
+detection_model = model_utils.load_model_from_checkpoint(PATH_TO_CFG, PATH_TO_CKPT, as_detect_fn=False)
 category_index = model_utils.create_category_index(PATH_TO_LABELS)
 print("Loaded model")
 
@@ -39,7 +43,7 @@ while True:
     #     np.mean(image_np, 2, keepdims=True), (1, 1, 3)).astype(np.uint8)
 
     input_tensor = tf.convert_to_tensor(np.expand_dims(image_np, 0), dtype=tf.float32)
-    detections, predictions_dict, shapes = model_utils.detect_fn(detection_model, input_tensor)
+    detections = model_utils.detect_fn(detection_model, input_tensor)
 
     label_id_offset = 1
     image_np_with_detections = image_np.copy()
