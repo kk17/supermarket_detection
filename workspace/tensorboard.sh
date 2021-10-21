@@ -13,5 +13,5 @@ if [ -f .env ]; then
     source .env
 fi
 
-tensorboard --logdir models/$MODEL_NAME/$MODEL_VERSION/train
+tensorboard --logdir models/$MODEL_NAME/$MODEL_VERSION
 # ngrok http 6006
