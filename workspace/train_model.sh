@@ -24,10 +24,15 @@ fi
 
 RESTART_CHECKPOINT=${RESTART_CHECKPOINT:-false}
 POSITION_ARGS=("")
+SYNC_TO_DRIVE=${SYNC_TO_DRIVE:-false}
 while [[ $# > 0 ]]; do
     case "$1" in
     --restart)
         RESTART_CHECKPOINT=true
+        shift
+        ;;
+    --sync)
+        SYNC_TO_DRIVE=true
         shift
         ;;
     *) # unknown flag/switch
@@ -44,10 +49,16 @@ if [ "$RESTART_CHECKPOINT" = "true" ]; then
 fi
 cd $DIR
 
+MODEL_DIR=models/${MODEL_NAME}/${MODEL_VERSION}
+
 SCRIPT_PATH=$DIR/../tensorflow_model_garden/research/object_detection/model_main_tf2.py
 python ${SCRIPT_PATH} \
   --pipeline_config_path=models/${MODEL_NAME}/${MODEL_VERSION}/pipeline.config\
-  --model_dir=models/${MODEL_NAME}/${MODEL_VERSION}\
+  --model_dir=${MODEL_DIR}\
   --checkpoint_every_n=100 \
   --num_workers=3 \
   --alsologtostderr
+
+if [ "${SYNC_TO_DRIVE}" = "true" ]; then
+    ./sync_workspace_with_drive.sh $MODEL_DIR --to
+fi
