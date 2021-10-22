@@ -27,10 +27,14 @@ SELECTED=${SELECTED:-0}
 export DATASET_DIR=${DATASETS[$SELECTED]}
 echo "Select DATASET is $DATASET_DIR"
 
+
 if [ ! -f .env ]; then
-    cat <<EOT >> .env
-DATASET_DIR=${DATASETS[$SELECTED]}
-EOT
+    echo "DATASET_DIR=${DATASETS[$SELECTED]}" >> .env
 else
-    sed -i -E "s|DATASET_DIR=.+|DATASET_DIR=${DATASETS[$SELECTED]}|g" .env
+    RESULT=$(grep -E '^DATASET_DIR=' .env || true)
+    if [ -n "$RESULT" ]; then
+        sed -i -E "s|DATASET_DIR=.+|DATASET_DIR=${DATASETS[$SELECTED]}|g" .env
+    else
+        echo "DATASET_DIR=${DATASETS[$SELECTED]}" >> .env
+    fi
 fi
