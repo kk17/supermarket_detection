@@ -12,15 +12,6 @@ cd $DIR
 if [ -f .env ]; then
     source .env
 fi
-MODEL_NAME=${MODEL_NAME:-efficientdet_d0_coco17_tpu}
-if [ $# -gt 1 ]; then
-    MODEL_NAME=$1
-fi
-
-MODEL_VERSION=${MODEL_VERSION:-v1}
-if [ $# -gt 2 ]; then
-    MODEL_VERSION=$2
-fi
 
 RESTART_CHECKPOINT=${RESTART_CHECKPOINT:-false}
 POSITION_ARGS=("")
