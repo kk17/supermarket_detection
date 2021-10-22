@@ -100,7 +100,7 @@ def main():
     if args.copy_from_version:
         origin_pipeline_config = os.path.join(workspace_dir, 'models', args.model_name, args.copy_from_version, 'pipeline.config')
     elif args.copy_from_pre_trained:
-        origin_pipeline_config = os.path.join(workspace_dir, 'pre_trained_models', args.model_name, args.model_version, 'pipeline.config')
+        origin_pipeline_config = os.path.join(workspace_dir, 'pre_trained_models', args.model_name, 'pipeline.config')
 
     fine_tune_checkpoint = os.path.join('pre_trained_models', args.model_name, 'checkpoint', f'ckpt-{args.checkpoint_num}')
     train_input_path = os.path.join(args.dataset_dir, "train.tfrecord")
