@@ -1,4 +1,4 @@
-from architecture import * 
+from facenet.architecture import * 
 import os 
 import cv2
 import mtcnn
