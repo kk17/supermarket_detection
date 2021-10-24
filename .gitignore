@@ -13,3 +13,4 @@ workspace/models/*
 workspace/exported_models/*
 !workspace/**/*.sh
 !workspace/**/.gitkeep
+facenet/facenet_keras_weights.h5
