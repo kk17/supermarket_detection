@@ -29,9 +29,10 @@ fi
 
 cd $DIR
 PRETRAINED_MODEL_DIR=pre_trained_models/$SIMPLE_MODEL_NAME
-MODEL_DIR=models/$SIMPLE_MODEL_NAME/v1
+MODEL_VERSION=$(date -u +"%Y-%m-%d")_v1
+MODEL_DIR=models/$SIMPLE_MODEL_NAME/${MODEL_VERSION}
 mkdir -p $MODEL_DIR
 cp $PRETRAINED_MODEL_DIR/pipeline.config $MODEL_DIR/pipeline.config
 
 cd $DIR
-python ./update_pipeline_config.py -n $SIMPLE_MODEL_NAME -v "v1"
+python ./update_pipeline_config.py -n $SIMPLE_MODEL_NAME -v $MODEL_VERSION
