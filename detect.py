@@ -2,13 +2,11 @@
 
 import numpy as np
 import cv2
-from supermarket_detection import model_utils
+from supermarket_detection import model_utils, config
 import tensorflow as tf
 import os
 from object_detection.utils import visualization_utils as viz_utils
-import yaml
 import argparse
-from attrdict import AttrDict
 
 
 def load_model_and_category_index(cfg):
@@ -81,11 +79,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", "-f", type=str, default="config/default.yml")
     args = parser.parse_args()
-    with open(args.config,'r') as f:
-        cfg = AttrDict(yaml.full_load(f))
+    cfg = config.load_from_yaml(args.config).object_detection
     model, catagory = load_model_and_category_index(cfg)
-    min_score_thresh = cfg.min_score_thresh or 0.3
-    detect_from_camera(model, catagory, min_score_thresh)
+    detect_from_camera(model, catagory, cfg.min_score_thresh)
 
 
 if __name__ == '__main__':

@@ -1,13 +1,30 @@
 import yaml
+class ObjectDetection:
+    def __init__(self,
+                 load_model_from_checkpoint=False,
+                 model_dir=None,
+                 checkpoint_dir=None,
+                 pipeline_config_path=None,
+                 checkpoint_no=0,
+                 label_map_path=None,
+                 min_score_thresh=0.3):
+        self.load_model_from_checkpoint = load_model_from_checkpoint
+        self.model_dir = model_dir
+        self.pipeline_config_path = pipeline_config_path
+        self.checkpoint_dir = checkpoint_dir
+        self.checkpoint_no = checkpoint_no
+        self.label_map_path = label_map_path
+        self.min_score_thresh = min_score_thresh
 
-class ObjectDetection(yaml.YAMLObject):
-    yaml_tag = 'object_detection'
-    def __init__(self):
-        self.load_model_from_checkpoint = False
-        self.model_dir = None
-        self.label_map_path = None
-        self.checkpoint_no = 0
 
-class Config(yaml.YAMLObject):
-    def __init__(self):
-        self.object_detection = ObjectDetection()
+class Config:
+    def __init__(self, object_detection=ObjectDetection):
+        self.object_detection = object_detection
+
+
+def load_from_yaml(filepath):
+    with open(filepath,'r') as f:
+        cfg_dict = yaml.full_load(f)
+    if 'object_detection' in cfg_dict:
+        cfg_dict['object_detection'] = ObjectDetection(**cfg_dict['object_detection'])
+    return Config(**cfg_dict)
