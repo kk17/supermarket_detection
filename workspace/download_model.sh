@@ -33,4 +33,4 @@ mkdir -p $MODEL_DIR
 cp $PRETRAINED_MODEL_DIR/pipeline.config $MODEL_DIR/pipeline.config
 
 cd $DIR
-python ./update_pipeline_config.py
+python ./update_pipeline_config.py -n $SIMPLE_MODEL_NAME -v "v1"
