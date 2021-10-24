@@ -8,6 +8,7 @@ fi
 IFS=$'\n\t'
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
+mkdir -p $DIR/pre_trained_models
 cd $DIR/pre_trained_models
 
 MODEL_URL=${MODEL_URL:-http://download.tensorflow.org/models/object_detection/tf2/20200711/efficientdet_d0_coco17_tpu-32.tar.gz}
