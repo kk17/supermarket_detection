@@ -33,6 +33,11 @@ while [[ $# > 0 ]]; do
         DELETE_NO_EXIST=false
         shift
         ;;
+    --current-model)
+        MODEL_DIR=models/${MODEL_NAME}/${MODEL_VERSION}
+        SYNC_SUB_DIRS+=($MODEL_DIR)
+        shift
+        ;;
     *) # unknown flag/switch
         SYNC_SUB_DIRS+=("$1")
         shift

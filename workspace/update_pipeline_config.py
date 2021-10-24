@@ -6,6 +6,7 @@ import os
 
 def update_pipeline_config_file(
     pipeline_config,
+    origin_pipeline_config=None,
     num_classes=None,
     batch_size=None,
     fine_tune_checkpoint="",
@@ -20,7 +21,9 @@ def update_pipeline_config_file(
     eval_use_moving_averages=False,
     
 ):
-    configs = config_util.get_configs_from_pipeline_file(pipeline_config)
+    if not origin_pipeline_config:
+        origin_pipeline_config = pipeline_config
+    configs = config_util.get_configs_from_pipeline_file(origin_pipeline_config)
     model_config = configs['model']
     if model_config.faster_rcnn.num_classes != 0:
         model_config.faster_rcnn.num_classes = num_classes
@@ -57,6 +60,8 @@ def update_pipeline_config_file(
 
 def main():
     from dotenv import load_dotenv
+    import argparse
+
     os.chdir(os.path.abspath(os.path.dirname(__file__)))
     
     load_dotenv()
@@ -66,16 +71,41 @@ def main():
     checkpoint_num = os.environ.get('CHECKPOINT_NUM', '0')
     dataset_dir = os.environ.get('DATASET_DIR', 'data/custom01')
 
-    if not model_name:
-        print('model_name must be specified')
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--name", '-n', type=str, dest='model_name', default=model_name,
+                        help="model name")
+    parser.add_argument("--version", '-v', type=str, dest='model_version', default=model_version,
+                        help="model version")
+    parser.add_argument("--checkpoint-num", '-cn', type=int, default=int(checkpoint_num),
+                        help="checkpoint num")
+    parser.add_argument("--dataset-dir", '-d', type=str, default=dataset_dir,
+                        help="dataset dir")
+    parser.add_argument("--copy-from-version", '-fv', type=str,
+                        help="copy config from model version")
+    parser.add_argument("--copy-from-pre-trained", '-fp', action='store_true',
+                        help="copy config from model version")
+
+    args = parser.parse_args()
+    print(args)
+
+    if not args.model_name:
+        print('model name must be specified')
         return
 
+
     workspace_dir = os.path.abspath(os.path.dirname(__file__))
-    pipeline_config = os.path.join(workspace_dir, 'models', model_name, model_version, 'pipeline.config')
-    fine_tune_checkpoint = os.path.join('pre_trained_models', model_name, 'checkpoint', f'ckpt-{checkpoint_num}')
-    train_input_path = os.path.join(dataset_dir, "train.tfrecord")
-    label_map_path = os.path.join(dataset_dir, "label_map.pbtxt")
-    eval_input_path = os.path.join(dataset_dir, "valid.tfrecord")
+    pipeline_config = os.path.join(workspace_dir, 'models', args.model_name, args.model_version, 'pipeline.config')
+    origin_pipeline_config = pipeline_config
+    if args.copy_from_version:
+        origin_pipeline_config = os.path.join(workspace_dir, 'models', args.model_name, args.copy_from_version, 'pipeline.config')
+    elif args.copy_from_pre_trained:
+        origin_pipeline_config = os.path.join(workspace_dir, 'pre_trained_models', args.model_name, 'pipeline.config')
+
+    fine_tune_checkpoint = os.path.join('pre_trained_models', args.model_name, 'checkpoint', f'ckpt-{args.checkpoint_num}')
+    train_input_path = os.path.join(args.dataset_dir, "train.tfrecord")
+    label_map_path = os.path.join(args.dataset_dir, "label_map.pbtxt")
+    eval_input_path = os.path.join(args.dataset_dir, "valid.tfrecord")
 
     os.chdir(os.path.abspath(os.path.dirname(__file__)))
     import sys
@@ -85,8 +115,9 @@ def main():
     category_index = model_utils.create_category_index(label_map_path)
     num_classes = len(category_index)
 
+    print(f'origin_pipeline_config: {origin_pipeline_config}')
     print(f'pipeline_config: {pipeline_config}')
-    args = {
+    update_config = {
         'num_classes': num_classes,
         'fine_tune_checkpoint': fine_tune_checkpoint,
         'train_input_path': train_input_path,
@@ -95,8 +126,8 @@ def main():
         'eval_label_map_path': label_map_path,
     }
 
-    print(f'args: {args}')
-    update_pipeline_config_file(pipeline_config, **args)
+    print(f'update_config: {update_config}')
+    update_pipeline_config_file(pipeline_config, origin_pipeline_config=origin_pipeline_config, **update_config)
     print('Finished')
 
 

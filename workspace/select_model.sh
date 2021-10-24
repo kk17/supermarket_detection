@@ -39,6 +39,15 @@ MODEL_NAME=${MODELS[$SELECTED]}
 MODEL_VERSION=${VERSIONS[$SELECTED]}
 EOT
 else
-    sed -i -E "s|MODEL_NAME=.+|MODEL_NAME=${MODELS[$SELECTED]}|g" .env
-    sed -i -E "s|MODEL_VERSION=.+|MODEL_VERSION=${VERSIONS[$SELECTED]}|g" .env
+    RESULT=$(grep -E '^MODEL_NAME=' .env || true)
+    if [ -n "$RESULT" ]; then
+        sed -i -E "s|MODEL_NAME=.+|MODEL_NAME=${MODELS[$SELECTED]}|g" .env
+        sed -i -E "s|MODEL_VERSION=.+|MODEL_VERSION=${VERSIONS[$SELECTED]}|g" .env
+    else
+        cat <<EOT >> .env
+MODEL_NAME=${MODELS[$SELECTED]}
+MODEL_VERSION=${VERSIONS[$SELECTED]}
+EOT
+    fi
+
 fi
