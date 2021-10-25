@@ -1,12 +1,19 @@
 import cv2 
 import numpy as np
 import mtcnn
-from architecture import *
-from train_v2 import normalize,l2_normalizer
 from scipy.spatial.distance import cosine
 from tensorflow.keras.models import load_model
 import pickle
+import sys
+sys.path.append('..')
 
+from facenet.architecture import *
+from facenet.preprocessing import normalize,l2_normalizer
+
+import os
+while not os.getcwd().endswith('_det'.lower()):
+    os.chdir('..')
+print(os.getcwd())
 
 confidence_t=0.99
 recognition_t=0.5
@@ -51,7 +58,8 @@ def detect(img ,detector,encoder,encoding_dict):
 
         if name == 'unknown':
             cv2.rectangle(img, pt_1, pt_2, (0, 0, 255), 2)
-            cv2.putText(img, name, pt_1, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1)
+            # cv2.putText(img, name, pt_1, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1)
+            continue
         else:
             cv2.rectangle(img, pt_1, pt_2, (0, 255, 0), 2)
             cv2.putText(img, name + f'__{distance:.2f}', (pt_1[0], pt_1[1] - 5), cv2.FONT_HERSHEY_SIMPLEX, 1,
@@ -60,16 +68,19 @@ def detect(img ,detector,encoder,encoding_dict):
 
 
 
+
 if __name__ == "__main__":
     required_shape = (160,160)
     face_encoder = InceptionResNetV2()
-    path_m = "facenet_keras_weights.h5"
+    path_m = "facenet/facenet_keras_weights.h5"
     face_encoder.load_weights(path_m)
-    encodings_path = 'encodings/encodings.pkl'
+    encodings_path = 'facenet/encodings/encodings.pkl'
     face_detector = mtcnn.MTCNN()
     encoding_dict = load_pickle(encodings_path)
-    
-    cap = cv2.VideoCapture(0)
+        
+    cap = cv2.VideoCapture('workspace/data/Prof.mov')
+    cap.set(cv2.CAP_PROP_BUFFERSIZE,2)
+    f = 0
 
     while cap.isOpened():
         ret,frame = cap.read()
@@ -80,11 +91,19 @@ if __name__ == "__main__":
         
         frame= detect(frame , face_detector , face_encoder , encoding_dict)
 
+        # if f%10 == 0:
         cv2.imshow('camera', frame)
+            
+        FPS = 1/12
+        FPS_MS = int(FPS * 1000)
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        if cv2.waitKey(25) & 0xFF == ord('q'):
             break
+        f+=1
 
-    
+    # When everything done, release the video capture object
+    cap.release()
 
+    # Closes all the frames
+    cv2.destroyAllWindows()
 
