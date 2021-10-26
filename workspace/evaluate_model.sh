@@ -12,18 +12,30 @@ cd $DIR
 if [ -f .env ]; then
     source .env
 fi
-MODEL_NAME=${MODEL_NAME:-efficientdet_d0_coco17_tpu}
-if [ -n "${1:-}" ]; then
-    MODEL_NAME=$1
-fi
 
-MODEL_VERSION=${MODEL_VERSION:-v1}
-if [ -n "${2:-}" ]; then
-    MODEL_VERSION=$2
-fi
+MODEL_DIR=models/${MODEL_NAME}/${MODEL_VERSION}
+PIPELINE_CONFIG_PATH=$MODEL_DIR/pipeline.config
 
-SCRIPT_PATH=$DIR/../tensorflow_model_garden/research/object_detection/model_main_tf2.py
+USE_TPU=${USE_TPU:-false}
+while [[ $# > 0 ]]; do
+    case "$1" in
+    --tpu)
+        USE_TPU=true
+        MODEL_DIR=$GS_PATH_PREFIX/$MODEL_DIR
+        shift
+        ;;
+    *) # unknown flag/switch
+        POSITION_ARGS+=("$1")
+        shift
+        ;;
+    esac
+done
+set -- "${POSITION_ARGS[@]}"
+
+# SCRIPT_PATH=$DIR/../tensorflow_model_garden/research/object_detection/model_main_tf2.py
+SCRIPT_PATH=$DIR/model_main_tf2.py
 python ${SCRIPT_PATH} \
-  --model_dir=models/${MODEL_NAME}/${MODEL_VERSION}\
-  --pipeline_config_path=models/${MODEL_NAME}/${MODEL_VERSION}/pipeline.config\
-  --checkpoint_dir=models/${MODEL_NAME}/${MODEL_VERSION}
+  --model_dir=${MODEL_DIR} \
+  --pipeline_config_path=${PIPELINE_CONFIG_PATH} \
+  --checkpoint_dir=${MODEL_DIR} \
+  --use_tpu=$USE_TPU
