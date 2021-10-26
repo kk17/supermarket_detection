@@ -48,13 +48,13 @@ fi
 if [ "$SYNC_FROM_GS" = "true" ]; then
     for DIR in ${SYNC_SUB_DIRS[@]}; do
         echo "sync  $DIR from dirve"
-        gsutil cp -r $GS_PATH_PREFIX/$DIR/ ./$DIR/
+        gsutil cp -r $GS_PATH_PREFIX/$DIR/ $(basename ./$DIR/)
     done
 fi
 
 if [ "$SYNC_TO_GS" = "true" ]; then
     for DIR in ${SYNC_SUB_DIRS[@]}; do
         echo "sync  $DIR to dirve"
-        gsutil cp -r ./$DIR/ $GS_PATH_PREFIX/$DIR/
+        gsutil cp -r ./$DIR/ $(basename $GS_PATH_PREFIX/$DIR/)
     done
 fi
