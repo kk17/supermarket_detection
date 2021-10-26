@@ -16,6 +16,7 @@ fi
 RESTART_CHECKPOINT=${RESTART_CHECKPOINT:-false}
 POSITION_ARGS=("")
 SYNC_TO_DRIVE=${SYNC_TO_DRIVE:-false}
+USE_TPU=${USE_TPU:-false}
 while [[ $# > 0 ]]; do
     case "$1" in
     --restart)
@@ -24,6 +25,10 @@ while [[ $# > 0 ]]; do
         ;;
     --sync)
         SYNC_TO_DRIVE=true
+        shift
+        ;;
+    --tpu)
+        USE_TPU=true
         shift
         ;;
     *) # unknown flag/switch
@@ -48,7 +53,8 @@ python ${SCRIPT_PATH} \
   --model_dir=${MODEL_DIR}\
   --checkpoint_every_n=100 \
   --num_workers=3 \
-  --alsologtostderr
+  --alsologtostderr \
+  --use_tpu=$USE_TPU
 
 if [ "${SYNC_TO_DRIVE}" = "true" ]; then
     ./sync_workspace_with_drive.sh $MODEL_DIR --to
