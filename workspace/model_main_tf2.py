@@ -69,6 +69,8 @@ flags.DEFINE_boolean('record_summaries', True,
                       ' or the training pipeline. This does not impact the'
                       ' summaries of the loss values which are always'
                       ' recorded.'))
+flags.DEFINE_boolean('google_login', False,
+                     ('Login google account for reading data from gcs'))
 
 FLAGS = flags.FLAGS
 
@@ -78,7 +80,7 @@ def main(unused_argv):
   flags.mark_flag_as_required('pipeline_config_path')
   tf.config.set_soft_device_placement(True)
 
-  if FLAGS.use_tpu:
+  if FLAGS.use_tpu or FLAGS.google_login:
     import os
     IS_COLAB_BACKEND = 'COLAB_GPU' in os.environ  # this is always set on Colab, the value is 0 or 1 depending on GPU presence
     if IS_COLAB_BACKEND:

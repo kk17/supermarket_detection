@@ -38,4 +38,4 @@ python ${SCRIPT_PATH} \
   --model_dir=${MODEL_DIR} \
   --pipeline_config_path=${PIPELINE_CONFIG_PATH} \
   --checkpoint_dir=${MODEL_DIR} \
-  --use_tpu=$USE_TPU
+  --google_login $USE_TPU
