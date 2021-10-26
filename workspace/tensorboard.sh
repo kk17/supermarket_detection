@@ -31,5 +31,7 @@ while [[ $# > 0 ]]; do
 done
 set -- "${POSITION_ARGS[@]}"
 
+echo "run the follow to set a tunnel for viewing tensorboard on colab:"
+echo "ngrok http 6006 --region ap"
+
 google_login=$USE_TPU python $DIR/my_tensorboard.py --logdir $MODEL_DIR
-# ngrok http 6006
