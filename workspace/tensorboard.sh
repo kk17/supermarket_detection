@@ -31,5 +31,5 @@ while [[ $# > 0 ]]; do
 done
 set -- "${POSITION_ARGS[@]}"
 
-tensorboard --logdir $MODEL_DIR
+google_login=$USE_TPU python $DIR/my_tensorboard.py --logdir $MODEL_DIR
 # ngrok http 6006

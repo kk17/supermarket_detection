@@ -61,7 +61,7 @@ SCRIPT_PATH=$DIR/model_main_tf2.py
 python ${SCRIPT_PATH} \
   --pipeline_config_path=${PIPELINE_CONFIG_PATH} \
   --model_dir=${MODEL_DIR}\
-  --checkpoint_every_n=100 \
+  --checkpoint_every_n=1000 \
   --alsologtostderr \
   --use_tpu=$USE_TPU
 
