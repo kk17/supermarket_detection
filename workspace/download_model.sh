@@ -8,6 +8,7 @@ fi
 IFS=$'\n\t'
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
+mkdir -p $DIR/pre_trained_models
 cd $DIR/pre_trained_models
 
 MODEL_URL=${MODEL_URL:-http://download.tensorflow.org/models/object_detection/tf2/20200711/efficientdet_d0_coco17_tpu-32.tar.gz}
@@ -28,9 +29,10 @@ fi
 
 cd $DIR
 PRETRAINED_MODEL_DIR=pre_trained_models/$SIMPLE_MODEL_NAME
-MODEL_DIR=models/$SIMPLE_MODEL_NAME/v1
+MODEL_VERSION=$(date -u +"%Y-%m-%d")_v1
+MODEL_DIR=models/$SIMPLE_MODEL_NAME/${MODEL_VERSION}
 mkdir -p $MODEL_DIR
 cp $PRETRAINED_MODEL_DIR/pipeline.config $MODEL_DIR/pipeline.config
 
 cd $DIR
-python ./update_pipeline_config.py
+python ./update_pipeline_config.py -n $SIMPLE_MODEL_NAME -v $MODEL_VERSION
