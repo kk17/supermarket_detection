@@ -2,6 +2,8 @@
 
 import numpy as np
 import cv2
+from PIL import Image
+from supermarket_detection.dataset_utils import load_image_into_numpy_array
 from supermarket_detection import model_utils, config
 import tensorflow as tf
 import os
@@ -126,14 +128,57 @@ def main():
                         "-f",
                         type=str,
                         default="config/default.yml")
+    parser.add_argument("--inputpath", 
+                        "-i",
+                        type=str,
+                        default='workspace/data/test')
+    parser.add_argument("--outputpath",
+                        "-o",
+                        type=str,
+                        default='workspace/output/test')
+    parser.add_argument("--camera",
+                        "-c",
+                        action="store_true")
     args = parser.parse_args()
     cfg = config.load_from_yaml(args.config).object_detection
     model, catagory = load_model_and_category_index(cfg)
-    detect_from_camera(model,
-                       catagory,
-                       min_score_thresh=cfg.min_score_thresh,
-                       detect_every_n_frame=cfg.detect_every_n_frame)
+    
+    if args.camera:
+        detect_from_camera(model,
+                        catagory,
+                        min_score_thresh=cfg.min_score_thresh,
+                        detect_every_n_frame=cfg.detect_every_n_frame)
+    else:    
+        if not os.path.exists(args.outputpath):
+            os.makedirs(args.outputpath)
+            
+        filenames = os.listdir(args.inputpath)
+        
+        for filename in filenames:
+            image_np = load_image_into_numpy_array(f'{args.inputpath}/{filename}')
+            
+            label_id_offset = 1
+            min_score_thresh = 0.3
+            detections = detect_from_image_numpy(model,
+                                                catagory,
+                                                min_score_thresh=cfg.min_score_thresh,
+                                                image_np=image_np)
+            if detections:
+                viz_utils.visualize_boxes_and_labels_on_image_array(
+                    image_np,
+                    detections['detection_boxes'][0].numpy(),
+                    (detections['detection_classes'][0].numpy() +
+                    label_id_offset).astype(int),
+                    detections['detection_scores'][0].numpy(),
+                    catagory,
+                    use_normalized_coordinates=True,
+                    max_boxes_to_draw=10,
+                    min_score_thresh=min_score_thresh,
+                    agnostic_mode=False)
 
+            im_bgr = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
+
+            cv2.imwrite(f'{args.outputpath}/{filename}', im_bgr)
 
 if __name__ == '__main__':
     main()
