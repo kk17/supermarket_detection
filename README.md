@@ -134,6 +134,25 @@ Copy train result from google drive
 ./sync_workspace_with_drive.sh models/ssd_mobilenet_v2_fpnlite_320x320 --from
 ```
 
+## Training on TPU
+
+You booster the training by using TPU in Colab. To do this you need to put the dataset and pre-trained model in Google Cloud Storage and update the relative file path in the `pipeline.config`. 
+
+You should set `GS_PATH_PREFIX` and `DATASET_DIR` in the workspace `.env` file. For example:
+
+```ini
+GS_PATH_PREFIX=gs://kk17_ml_data/supermarket_detection
+DATASET_DIR=gs://kk17_ml_data/supermarket_detection/data/custom01
+```
+
+After that you can run the training and evaluation script with `--tpu` option. For example:
+
+```bash
+./train_model.sh --tpu
+./evaluation_model.sh --tpu
+./tensorboard_model.sh --tpu
+```
+
 ## Build a dataset for object detection
 
 Use fiftyone to get the require class from open image v6 dataset and build a TFOjbectDetectionDataset. Check notebooks: [building_dataset.ipynb](https://github.com/kk17/supermark_det/blob/main/notebooks/building_dataset.ipynb)
