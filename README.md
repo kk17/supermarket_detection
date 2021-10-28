@@ -31,6 +31,20 @@ Object detection uses the Tensorflow Object Detection API.
 
 Note: You can run the jupyter notebook [notebooks/training_on_cloud.ipynb](./notebooks/training_on_cloud.ipynb) to prepare training on Google colab. After you open vscode in colab, the follow steps are the same.
 
+### 0. install protobuf
+
+The Tensorflow Object Detection API uses Protobufs to configure model and training parameters. Before the framework can be used, the Protobuf libraries must be downloaded and compiled.
+
+For Windows user, you need manual to install `Protobufs` first, pleas follow the following guide:
+
+*   Head to the [protoc releases page](https://github.com/google/protobuf/releases)
+
+*   Download the latest `protoc-*-*.zip` release (e.g. `protoc-3.12.3-win64.zip` for 64-bit Windows)
+
+*   Extract the contents of the downloaded `protoc-*-*.zip` in a directory `<PATH_TO_PB>` of your choice (e.g. `C:\Program Files\Google Protobuf`)
+
+*   Add `<PATH_TO_PB>\bin` to your `Path` environment variable (see [Environment Setup](https://tensorflow-object-detection-api-tutorial.readthedocs.io/en/latest/install.html#set-env))
+  
 ### 1. init 
 
 ```bash
@@ -134,6 +148,25 @@ Copy train result from google drive
 ./sync_workspace_with_drive.sh models/ssd_mobilenet_v2_fpnlite_320x320 --from
 ```
 
+## Training on TPU
+
+You booster the training by using TPU in Colab. To do this you need to put the dataset and pre-trained model in Google Cloud Storage and update the relative file path in the `pipeline.config`. 
+
+You should set `GS_PATH_PREFIX` and `DATASET_DIR` in the workspace `.env` file. For example:
+
+```ini
+GS_PATH_PREFIX=gs://kk17_ml_data/supermarket_detection
+DATASET_DIR=gs://kk17_ml_data/supermarket_detection/data/custom01
+```
+
+After that you can run the training and evaluation script with `--tpu` option. For example:
+
+```bash
+./train_model.sh --tpu
+./evaluation_model.sh --tpu
+./tensorboard_model.sh --tpu
+```
+
 ## Build a dataset for object detection
 
 Use fiftyone to get the require class from open image v6 dataset and build a TFOjbectDetectionDataset. Check notebooks: [building_dataset.ipynb](https://github.com/kk17/supermark_det/blob/main/notebooks/building_dataset.ipynb)
@@ -142,6 +175,7 @@ Use fiftyone to get the require class from open image v6 dataset and build a TFO
 ### Object detection
 
 - [Training Custom Object Detector — TensorFlow 2 Object Detection API tutorial documentation](https://tensorflow-object-detection-api-tutorial.readthedocs.io/en/latest/training.html)
+- [Training and serving a realtime mobile object detector in 30 minutes with Cloud TPUs — The TensorFlow Blog](https://blog.tensorflow.org/2018/07/training-and-serving-realtime-mobile-object-detector-cloud-tpus.html)
 ### Face Recognition
 
 - [R4j4n/Face-recognition-Using-Facenet-On-Tensorflow-2.X](https://github.com/R4j4n/Face-recognition-Using-Facenet-On-Tensorflow-2.X)

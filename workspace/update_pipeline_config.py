@@ -135,7 +135,7 @@ def main():
         'train_label_map_path': label_map_path,
         'eval_input_path': eval_input_path,
         'eval_label_map_path': label_map_path,
-        'batch_size': 4,
+        # 'batch_size': 4,
     }
 
     print(f'update_config: {update_config}')
