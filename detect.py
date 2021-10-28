@@ -2,7 +2,6 @@
 
 import numpy as np
 import cv2
-from PIL import Image
 from supermarket_detection.dataset_utils import load_image_into_numpy_array
 from supermarket_detection import model_utils, config
 import tensorflow as tf
@@ -116,6 +115,43 @@ def detect_from_camera(detection_model,
     cap.release()
     cv2.destroyAllWindows()
 
+def detect_from_directory(detection_model,
+                        category_index,
+                        inputpath,
+                        outputpath,
+                        min_score_thresh=0.3):
+    
+    label_id_offset = 1
+    
+    if not os.path.exists(outputpath):
+        os.makedirs(outputpath)
+        
+    filenames = os.listdir(inputpath)
+    
+    for filename in filenames:
+        image_np = load_image_into_numpy_array(f'{inputpath}/{filename}')
+        
+        detections = detect_from_image_numpy(detection_model,
+                                            category_index,
+                                            min_score_thresh,
+                                            image_np)
+        if detections:
+            viz_utils.visualize_boxes_and_labels_on_image_array(
+                image_np,
+                detections['detection_boxes'][0].numpy(),
+                (detections['detection_classes'][0].numpy() +
+                label_id_offset).astype(int),
+                detections['detection_scores'][0].numpy(),
+                category_index,
+                use_normalized_coordinates=True,
+                max_boxes_to_draw=10,
+                min_score_thresh=min_score_thresh,
+                agnostic_mode=False)
+
+        im_bgr = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
+
+        cv2.imwrite(f'{outputpath}/{filename}', im_bgr)        
+    logging.info("Completed predictions")
 
 def main():
 
@@ -149,36 +185,11 @@ def main():
                         min_score_thresh=cfg.min_score_thresh,
                         detect_every_n_frame=cfg.detect_every_n_frame)
     else:    
-        if not os.path.exists(args.outputpath):
-            os.makedirs(args.outputpath)
-            
-        filenames = os.listdir(args.inputpath)
-        
-        for filename in filenames:
-            image_np = load_image_into_numpy_array(f'{args.inputpath}/{filename}')
-            
-            label_id_offset = 1
-            min_score_thresh = 0.3
-            detections = detect_from_image_numpy(model,
-                                                catagory,
-                                                min_score_thresh=cfg.min_score_thresh,
-                                                image_np=image_np)
-            if detections:
-                viz_utils.visualize_boxes_and_labels_on_image_array(
-                    image_np,
-                    detections['detection_boxes'][0].numpy(),
-                    (detections['detection_classes'][0].numpy() +
-                    label_id_offset).astype(int),
-                    detections['detection_scores'][0].numpy(),
-                    catagory,
-                    use_normalized_coordinates=True,
-                    max_boxes_to_draw=10,
-                    min_score_thresh=min_score_thresh,
-                    agnostic_mode=False)
-
-            im_bgr = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
-
-            cv2.imwrite(f'{args.outputpath}/{filename}', im_bgr)
+        detect_from_directory(model,
+                        catagory,
+                        inputpath=args.inputpath,
+                        outputpath=args.outputpath,
+                        min_score_thresh=cfg.min_score_thresh)
 
 if __name__ == '__main__':
     main()
