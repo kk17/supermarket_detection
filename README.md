@@ -31,6 +31,20 @@ Object detection uses the Tensorflow Object Detection API.
 
 Note: You can run the jupyter notebook [notebooks/training_on_cloud.ipynb](./notebooks/training_on_cloud.ipynb) to prepare training on Google colab. After you open vscode in colab, the follow steps are the same.
 
+### 0. install protobuf
+
+The Tensorflow Object Detection API uses Protobufs to configure model and training parameters. Before the framework can be used, the Protobuf libraries must be downloaded and compiled.
+
+For Windows user, you need manual to install `Protobufs` first, pleas follow the following guide:
+
+*   Head to the [protoc releases page](https://github.com/google/protobuf/releases)
+
+*   Download the latest `protoc-*-*.zip` release (e.g. `protoc-3.12.3-win64.zip` for 64-bit Windows)
+
+*   Extract the contents of the downloaded `protoc-*-*.zip` in a directory `<PATH_TO_PB>` of your choice (e.g. `C:\Program Files\Google Protobuf`)
+
+*   Add `<PATH_TO_PB>\bin` to your `Path` environment variable (see [Environment Setup](https://tensorflow-object-detection-api-tutorial.readthedocs.io/en/latest/install.html#set-env))
+  
 ### 1. init 
 
 ```bash
@@ -161,6 +175,7 @@ Use fiftyone to get the require class from open image v6 dataset and build a TFO
 ### Object detection
 
 - [Training Custom Object Detector — TensorFlow 2 Object Detection API tutorial documentation](https://tensorflow-object-detection-api-tutorial.readthedocs.io/en/latest/training.html)
+- [Training and serving a realtime mobile object detector in 30 minutes with Cloud TPUs — The TensorFlow Blog](https://blog.tensorflow.org/2018/07/training-and-serving-realtime-mobile-object-detector-cloud-tpus.html)
 ### Face Recognition
 
 - [R4j4n/Face-recognition-Using-Facenet-On-Tensorflow-2.X](https://github.com/R4j4n/Face-recognition-Using-Facenet-On-Tensorflow-2.X)
