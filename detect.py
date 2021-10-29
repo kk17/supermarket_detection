@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import pandas as pd
 import numpy as np
 import cv2
 from supermarket_detection.dataset_utils import load_image_into_numpy_array
@@ -9,6 +10,7 @@ import os
 from object_detection.utils import visualization_utils as viz_utils
 import argparse
 import logging
+import re
 
 logging.basicConfig(
     level=logging.INFO,
@@ -117,6 +119,8 @@ def detect_from_camera(detection_model,
 
 def detect_from_directory(detection_model,
                         category_index,
+                        pred_df,
+                        export_images,
                         inputpath,
                         outputpath,
                         min_score_thresh=0.3):
@@ -135,8 +139,9 @@ def detect_from_directory(detection_model,
                                             category_index,
                                             min_score_thresh,
                                             image_np)
+        # logging.info(detections)
         if detections:
-            viz_utils.visualize_boxes_and_labels_on_image_array(
+            image_np, box_to_display_str_map = viz_utils.visualize_boxes_and_labels_on_image_array(
                 image_np,
                 detections['detection_boxes'][0].numpy(),
                 (detections['detection_classes'][0].numpy() +
@@ -148,10 +153,24 @@ def detect_from_directory(detection_model,
                 min_score_thresh=min_score_thresh,
                 agnostic_mode=False)
 
-        im_bgr = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
-
-        cv2.imwrite(f'{outputpath}/{filename}', im_bgr)        
+        # logging.info(box_to_display_str_map)
+        item_count = {}
+        item_count['Id'] = re.findall(r'(.*)(?:\.)',filename)[0]
+        logging.info(item_count['Id'])
+        for label in box_to_display_str_map.values():
+            label = label[0]
+            try:
+                item_count[re.findall(r'(.*)(?:\:)',label)[0]] += 1
+            except:
+                item_count[re.findall(r'(.*)(?:\:)',label)[0]] = 1
+        if export_images:
+            viz_utils.save_image_array_as_png(image_np, f'{outputpath}/{filename}')
+        # im_bgr = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
+        # cv2.imwrite(f'{outputpath}/{filename}', im_bgr)  
+        pred_df = pred_df.append(item_count, ignore_index=True) 
+        logging.info(pred_df.iloc[-1,:])     
     logging.info("Completed predictions")
+    return pred_df
 
 def main():
 
@@ -172,6 +191,9 @@ def main():
                         "-o",
                         type=str,
                         default='workspace/output/test')
+    parser.add_argument("--export_images",
+                        "-e",
+                        action="store_true")
     parser.add_argument("--camera",
                         "-c",
                         action="store_true")
@@ -184,12 +206,17 @@ def main():
                         catagory,
                         min_score_thresh=cfg.min_score_thresh,
                         detect_every_n_frame=cfg.detect_every_n_frame)
-    else:    
-        detect_from_directory(model,
+    else:  
+        pred_df = pd.DataFrame(columns=['Id', 'Apples', 'Banana', 'Oranges', 'Textbooks', 'Cereal Boxes'])  
+        pred_df = detect_from_directory(model,
                         catagory,
+                        pred_df,
+                        args.export_images,
                         inputpath=args.inputpath,
                         outputpath=args.outputpath,
                         min_score_thresh=cfg.min_score_thresh)
+        pred_df = pred_df.fillna(0).sort_values('Id')
+        pred_df.to_csv(f'{args.outputpath}/pred_df.csv', index=0)
 
 if __name__ == '__main__':
     main()
