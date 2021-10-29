@@ -139,36 +139,44 @@ def detect_from_directory(detection_model,
                                             category_index,
                                             min_score_thresh,
                                             image_np)
-        # logging.info(detections)
+        
         if detections:
-            image_np, box_to_display_str_map = viz_utils.visualize_boxes_and_labels_on_image_array(
-                image_np,
-                detections['detection_boxes'][0].numpy(),
-                (detections['detection_classes'][0].numpy() +
-                label_id_offset).astype(int),
-                detections['detection_scores'][0].numpy(),
-                category_index,
-                use_normalized_coordinates=True,
-                max_boxes_to_draw=10,
-                min_score_thresh=min_score_thresh,
-                agnostic_mode=False)
+            #draw bounding box 
+            if export_images:
+                viz_utils.visualize_boxes_and_labels_on_image_array(
+                    image_np,
+                    detections['detection_boxes'][0].numpy(),
+                    (detections['detection_classes'][0].numpy() +
+                    label_id_offset).astype(int),
+                    detections['detection_scores'][0].numpy(),
+                    category_index,
+                    use_normalized_coordinates=True,
+                    max_boxes_to_draw=10,
+                    min_score_thresh=min_score_thresh,
+                    agnostic_mode=False)
+                viz_utils.save_image_array_as_png(image_np, f'{outputpath}/{filename}')
+                # im_bgr = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
+                # cv2.imwrite(f'{outputpath}/{filename}', im_bgr)  
 
-        # logging.info(box_to_display_str_map)
-        item_count = {}
-        item_count['Id'] = re.findall(r'(.*)(?:\.)',filename)[0]
-        logging.info(item_count['Id'])
-        for label in box_to_display_str_map.values():
-            label = label[0]
-            try:
-                item_count[re.findall(r'(.*)(?:\:)',label)[0]] += 1
-            except:
-                item_count[re.findall(r'(.*)(?:\:)',label)[0]] = 1
-        if export_images:
-            viz_utils.save_image_array_as_png(image_np, f'{outputpath}/{filename}')
-        # im_bgr = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
-        # cv2.imwrite(f'{outputpath}/{filename}', im_bgr)  
-        pred_df = pred_df.append(item_count, ignore_index=True) 
-        logging.info(pred_df.iloc[-1,:])     
+            #count items
+            item_count = {}
+            item_count['Id'] = re.findall(r'(.*)(?:\.)',filename)[0]
+            logging.info(item_count['Id'])
+            
+            scores = detections['detection_scores'][0]
+            classes = (detections['detection_classes'][0].numpy() + label_id_offset).astype(int)
+            
+            for i in range(scores.shape[0]):
+                if scores is None or scores[i] > min_score_thresh:
+                    if classes[i] in category_index.keys():
+                        class_name = category_index[classes[i]]['name']
+                        try:
+                            item_count[class_name] += 1 
+                        except:
+                            item_count[class_name] = 1 
+                            
+            pred_df = pred_df.append(item_count, ignore_index=True) 
+            logging.info(pred_df.iloc[-1,:])     
     logging.info("Completed predictions")
     return pred_df
 
@@ -216,7 +224,7 @@ def main():
                         outputpath=args.outputpath,
                         min_score_thresh=cfg.min_score_thresh)
         pred_df = pred_df.fillna(0).sort_values('Id')
-        pred_df.to_csv(f'{args.outputpath}/pred_df.csv', index=0)
+        pred_df.to_csv(f'{args.outputpath}/pred_df.csv', index=0, errors='ignore')
 
 if __name__ == '__main__':
     main()
