@@ -116,7 +116,7 @@ def main():
     writer = None
 
     if args.outputpath != '':
-        writer = cv2.VideoWriter(args.outputpath, cv2.VideoWriter_fourcc(*'DIVX'), 20, (width,height))
+        writer = cv2.VideoWriter(args.outputpath, cv2.VideoWriter_fourcc(*'DIVX'), fps, (width,height))
         
     detect_every_n_frame = int(fps/2)
     f = 0
