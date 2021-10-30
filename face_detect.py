@@ -81,32 +81,33 @@ def main():
     parser.add_argument("--inputpath", 
                         "-i",
                         type=str,
-                        default='workspace/data/Prof.mov')
+                        default='')
     parser.add_argument("--outputpath", 
                         "-o",
                         type=str,
                         default='')
+    parser.add_argument("--detection_interval",
+                        "-d",
+                        type=float,
+                        default=0.5)
     parser.add_argument("--show",
                         "-s",
-                        action="store_true")
-    parser.add_argument("--camera",
-                        "-c",
                         action="store_true")
     args = parser.parse_args()
         
     (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
 
-    if args.camera:
+    if args.inputpath == '':
         cap = cv2.VideoCapture(0)
     else:
         cap = cv2.VideoCapture(args.inputpath)
         
     if int(major_ver) < 3:
-        fps = cap.get(cv2.cv.CV_CAP_PROP_FPS)
+        fps = round(cap.get(cv2.cv.CV_CAP_PROP_FPS))
         logging.info("Frames per second using video.get(cv2.cv.CV_CAP_PROP_FPS): {0}".
               format(fps))
     else:
-        fps = cap.get(cv2.CAP_PROP_FPS)
+        fps = round(cap.get(cv2.CAP_PROP_FPS))
         logging.info(
             "Frames per second using video.get(cv2.CAP_PROP_FPS) : {0}".format(
                 fps))    
@@ -118,7 +119,7 @@ def main():
     if args.outputpath != '':
         writer = cv2.VideoWriter(args.outputpath, cv2.VideoWriter_fourcc(*'DIVX'), fps, (width,height))
         
-    detect_every_n_frame = int(fps/2)
+    detect_every_n_frame = round(fps * args.detection_interval)
     f = 0
     while True:
         # Read frame from camera
