@@ -1,6 +1,7 @@
 import cv2 
 import numpy as np
 import mtcnn
+import math
 from scipy.spatial.distance import cosine
 from tensorflow.keras.models import load_model
 import pickle
@@ -40,7 +41,7 @@ def load_pickle(path):
     return encoding_dict
 
 def draw_bounding_box(img, pt_1, pt_2, name, distance):
-    if name != 'unknown':
+    if name != 'unknown' and not math.isinf(distance):
         cv2.rectangle(img, pt_1, pt_2, (0, 255, 0), 2)
         cv2.putText(img, name + f'__{distance:.2f}', (pt_1[0], pt_1[1] - 5), cv2.FONT_HERSHEY_SIMPLEX, 1,
                     (0, 200, 200), 2)
