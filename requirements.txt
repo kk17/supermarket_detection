@@ -5,3 +5,8 @@ ipywidgets>=7.0.0
 python-dotenv
 pyyaml==5.3.1
 attrdict
+numpy
+opencv-python
+mtcnn
+scikit-learn
+scipy
