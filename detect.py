@@ -208,14 +208,14 @@ def main():
     args = parser.parse_args()
     cfg = config.load_from_yaml(args.config).object_detection
     model, catagory = load_model_and_category_index(cfg)
-    
+    class_names = [catagory[index]['name']  for index in catagory.keys()] 
     if args.camera:
         detect_from_camera(model,
                         catagory,
                         min_score_thresh=cfg.min_score_thresh,
                         detect_every_n_frame=cfg.detect_every_n_frame)
-    else:  
-        pred_df = pd.DataFrame(columns=['Id', 'Apples', 'Banana', 'Oranges', 'Textbooks', 'Cereal Boxes'])  
+    else: 
+        pred_df = pd.DataFrame(columns=['Id'] + class_names)  
         pred_df = detect_from_directory(model,
                         catagory,
                         pred_df,
