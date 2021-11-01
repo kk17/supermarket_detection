@@ -7,7 +7,7 @@ Object detection uses the Tensorflow Object Detection API.
 
 ```bash
 ├── build_dataset.py # script for build dataset using fiftyone
-├── detect.py # script for loading a model and make camara dectection
+├── object_detect.py # script for loading a model and dectection
 ├── init.sh # script for install required packages 
 ├── notebooks # diretory for jupyter notebook
 ├── requirements.txt
@@ -121,11 +121,11 @@ This will export the trained model into `exported_models` folder.
 ### 8. test models on test dataset
 
 * open /config/default.yml and change the `pipeline_config_path` and `checkpoint_dir` to point to your model
-* run /detect.py 
+* run /object_detect.py 
 
 ```
 Usage:
-python detect.py [options]
+python object_detect.py [options]
 
 General options:
 -f, --config <path>         path to config file

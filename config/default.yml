@@ -13,9 +13,10 @@ object_detection:
   # checkpoint_no: 0
   # min_score_thresh: 0.6
 
+  # best model
   load_model_from_checkpoint: true
-  pipeline_config_path: workspace/models/faster_rcnn_resnet50_v1_1024x1024/2021-10-26_v1/pipeline.config
-  checkpoint_dir: workspace/models/faster_rcnn_resnet50_v1_1024x1024/2021-10-26_v1
-  checkpoint_no: 3
+  pipeline_config_path: workspace/exported_models/faster_rcnn_resnet50_v1_1024x1024/2021-10-29_v1/pipeline.config
+  checkpoint_dir: workspace/exported_models/faster_rcnn_resnet50_v1_1024x1024/2021-10-29_v1/checkpoint
+  checkpoint_no: 0
   min_score_thresh: 0.4
   detect_every_n_frame: 80

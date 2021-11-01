@@ -3,7 +3,8 @@
 import pandas as pd
 import numpy as np
 import cv2
-from supermarket_detection.dataset_utils import load_image_into_numpy_array
+import stopwatch
+# from supermarket_detection.dataset_utils import load_image_into_numpy_array
 from supermarket_detection import model_utils, config
 import tensorflow as tf
 import os
@@ -11,15 +12,11 @@ from object_detection.utils import visualization_utils as viz_utils
 import argparse
 import logging
 import re
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s: %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S')
+from skimage import io
+from stopwatch import Stopwatch
 
 
 def load_model_and_category_index(cfg):
-    logging.info("Loading model")
     if cfg.load_model_from_checkpoint:
         detection_model = model_utils.load_model_from_checkpoint(
             cfg.pipeline_config_path,
@@ -31,12 +28,10 @@ def load_model_and_category_index(cfg):
         detection_model = model_utils.load_saved_model(cfg.model_dir)
         detection_model.load_model_from_checkpoint = False
     category_index = model_utils.create_category_index(cfg.label_map_path)
-    logging.info("Loaded model")
     return detection_model, category_index
 
 
-def detect_from_image_numpy(detection_model, category_index, min_score_thresh,
-                            image_np):
+def detect_from_image_numpy(detection_model, image_np):
     # Expand dimensions since the model expects images to have shape: [1, None, None, 3]
     image_np_expanded = np.expand_dims(image_np, axis=0)
 
@@ -89,9 +84,7 @@ def detect_from_camera(detection_model,
 
         if count % detect_every_n_frame == 0:
             logging.info(f'Start dectect frame: {count}')
-            detections = detect_from_image_numpy(detection_model,
-                                                 category_index,
-                                                 min_score_thresh, image_np)
+            detections = detect_from_image_numpy(detection_model, image_np)
             # Display output
             logging.info(f'Finished dectect frame: {count}')
 
@@ -125,21 +118,26 @@ def detect_from_directory(detection_model,
                         outputpath,
                         min_score_thresh=0.3):
     
+    stopwatch_all = Stopwatch()
+    stopwatch_all.start()
     label_id_offset = 1
     
     if not os.path.exists(outputpath):
         os.makedirs(outputpath)
         
     filenames = os.listdir(inputpath)
-    
+
+    stopwatch = Stopwatch()
+    stopwatch.start()
     for filename in filenames:
-        image_np = load_image_into_numpy_array(f'{inputpath}/{filename}')
-        
-        detections = detect_from_image_numpy(detection_model,
-                                            category_index,
-                                            min_score_thresh,
-                                            image_np)
-        
+        filepath = f'{inputpath}/{filename}'
+        stopwatch.restart()
+        logging.info(f'loading image file: {filepath}')
+        # image_np = load_image_into_numpy_array(filepath)
+        image_np = io.imread(filepath)
+        logging.info(f'start detection for file: {filepath}')
+        detections = detect_from_image_numpy(detection_model, image_np)
+        logging.info(f'counting result for file: {filepath}')
         if detections:
             #draw bounding box 
             if export_images:
@@ -176,8 +174,8 @@ def detect_from_directory(detection_model,
                             item_count[class_name] = 1 
                             
             pred_df = pred_df.append(item_count, ignore_index=True) 
-            logging.info(pred_df.iloc[-1,:])     
-    logging.info("Completed predictions")
+            logging.info(f'result:\n{pred_df.iloc[-1,:]}\nused time: {stopwatch}') 
+    logging.info(f"Completed predictions. Total used time: {stopwatch_all}")
     return pred_df
 
 def main():
@@ -207,15 +205,27 @@ def main():
                         action="store_true")
     args = parser.parse_args()
     cfg = config.load_from_yaml(args.config).object_detection
+    stopwatch = Stopwatch()
+    
+    logging.info("Loading model")
+    stopwatch.start()
     model, catagory = load_model_and_category_index(cfg)
-    class_names = [catagory[index]['name']  for index in catagory.keys()] 
+    logging.info(f"Loaded model, time: {stopwatch}")
+    logging.info('initiating model')
+    stopwatch.restart()
+    # make a detection using a fake image to initiate the model
+    fake_iamge_np = np.zeros((100, 100, 3))
+    detect_from_image_numpy(model, fake_iamge_np)
+    logging.info(f'model initiated time: {stopwatch}')
+    stopwatch.stop()
+    
     if args.camera:
         detect_from_camera(model,
                         catagory,
                         min_score_thresh=cfg.min_score_thresh,
                         detect_every_n_frame=cfg.detect_every_n_frame)
-    else: 
-        pred_df = pd.DataFrame(columns=['Id'] + class_names)  
+    else:  
+        pred_df = pd.DataFrame(columns=['Id', 'Apples', 'Banana', 'Oranges', 'Textbooks', 'Cereal Boxes'])  
         pred_df = detect_from_directory(model,
                         catagory,
                         pred_df,
@@ -231,4 +241,14 @@ def main():
         pred_df.to_csv(f'{args.outputpath}/pred_df.csv', index=0, errors='ignore')
 
 if __name__ == '__main__':
+    # python - import side effects on logging: how to reset the logging module? - Stack Overflow
+    # https://stackoverflow.com/questions/12034393/import-side-effects-on-logging-how-to-reset-the-logging-module
+    # root = logging.getLogger()
+    # list(map(root.removeHandler, root.handlers))
+    # list(map(root.removeFilter, root.filters))
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s: %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S')
     main()
