@@ -118,6 +118,23 @@ You can run this while training.
 ```
 This will export the trained model into `exported_models` folder.
 
+### 8. test models on test dataset
+
+* open /config/default.yml and change the `pipeline_config_path` and `checkpoint_dir` to point to your model
+* run /detect.py 
+
+```
+Usage:
+python detect.py [options]
+
+General options:
+-f, --config <path>         path to config file
+-i, --inputpath <path>      path to test images folder
+-o, --outputpath <path>     path to output folder
+-e, --export_images         export images with bounding box to output folder
+-c, --camera                use camera instead of images from directory
+```
+
 ## Sync data with Google Drive
 You can use the `sync_workspace_with_drive.sh` in the `workspace` folder to synchronize data from or to Google Drive.
 
