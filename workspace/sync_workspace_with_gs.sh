@@ -33,6 +33,10 @@ while [[ $# > 0 ]]; do
         SYNC_SUB_DIRS+=($MODEL_DIR)
         shift
         ;;
+    --fix-tcp)
+        apt-get -o Dpkg::Options::="--force-confmiss" install --reinstall netbase
+        shift
+        ;;
     *) # unknown flag/switch
         SYNC_SUB_DIRS+=("$1")
         shift
@@ -48,13 +52,15 @@ fi
 if [ "$SYNC_FROM_GS" = "true" ]; then
     for DIR in ${SYNC_SUB_DIRS[@]}; do
         echo "sync  $DIR from gcs"
-        gsutil cp -r $GS_PATH_PREFIX/$DIR $(dirname ./$DIR)
+        DIR=$(echo $DIR | sed  -E "s|^workspace/||g")
+        gsutil -m cp -r $GS_PATH_PREFIX/$DIR $(dirname ./$DIR)
     done
 fi
 
 if [ "$SYNC_TO_GS" = "true" ]; then
     for DIR in ${SYNC_SUB_DIRS[@]}; do
         echo "sync  $DIR to gcs"
-        gsutil cp -r ./$DIR $(dirname $GS_PATH_PREFIX/$DIR)
+        DIR=$(echo $DIR | sed  -E "s|^workspace/||g")
+        gsutil -m cp -r ./$DIR $(dirname $GS_PATH_PREFIX/$DIR)
     done
 fi

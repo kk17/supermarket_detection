@@ -57,6 +57,7 @@ fi
 if [ "$SYNC_FROM_DRIVE" = "true" ]; then
     for DIR in ${SYNC_SUB_DIRS[@]}; do
         echo "sync  $DIR from dirve"
+        DIR=$(echo $DIR | sed  -E "s|^workspace/||g")
         rsync  ${RSYNC_ARGS[@]} $DRIVER_DIR_PATH/$DIR/ ./$DIR/
     done
 fi
@@ -64,6 +65,7 @@ fi
 if [ "$SYNC_TO_DRIVE" = "true" ]; then
     for DIR in ${SYNC_SUB_DIRS[@]}; do
         echo "sync  $DIR to dirve"
+        DIR=$(echo $DIR | sed  -E "s|^workspace/||g")
         rsync ${RSYNC_ARGS[@]} ./$DIR/ $DRIVER_DIR_PATH/$DIR/
     done
 fi

@@ -46,10 +46,9 @@ set -- "${POSITION_ARGS[@]}"
 
 if [ "$RESTART_CHECKPOINT" = "true" ]; then
     if [ "$USE_TPU" = "true" ]; then
-        # gsutil TODO
-        echo TODO
+        gsutil rm -r $MODEL_DIR
     else
-        cd models/${MODEL_NAME}/${MODEL_VERSION}
+        cd $MODEL_DIR
         rm -rf checkpoint train ckpt-*
         cd $DIR
     fi
@@ -61,7 +60,7 @@ SCRIPT_PATH=$DIR/model_main_tf2.py
 python ${SCRIPT_PATH} \
   --pipeline_config_path=${PIPELINE_CONFIG_PATH} \
   --model_dir=${MODEL_DIR}\
-  --checkpoint_every_n=1000 \
+  --checkpoint_every_n=100 \
   --alsologtostderr \
   --use_tpu=$USE_TPU
 

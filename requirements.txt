@@ -6,3 +6,7 @@ python-dotenv
 pyyaml==5.3.1
 attrdict
 scipy==1.7.1
+numpy
+opencv-python
+mtcnn
+scikit-learn
