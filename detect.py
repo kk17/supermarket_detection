@@ -223,6 +223,10 @@ def main():
                         inputpath=args.inputpath,
                         outputpath=args.outputpath,
                         min_score_thresh=cfg.min_score_thresh)
+        try:
+            pred_df['Id'] = pred_df['Id'].astype(int)
+        except:
+            pass
         pred_df = pred_df.fillna(0).sort_values('Id')
         pred_df.to_csv(f'{args.outputpath}/pred_df.csv', index=0, errors='ignore')
 
