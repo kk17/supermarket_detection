@@ -6,6 +6,20 @@ from object_detection.builders import model_builder
 from functools import partial
 
 
+def load_classificaton_model(model_path):
+    # TODO: chengdi
+    pass
+
+def make_prediction(image_np):
+    """make a prediction
+
+    Args:
+        image_np: image in numpy ndarray
+    return 0: textbook, 1: creal box, 3: none of both #TODO can change this return format
+    """
+    # TODO: chengdi
+    pass
+
 def load_saved_model(model_path):
     # Load saved model and build the detection function
     detect_fn = tf.saved_model.load(model_path)
