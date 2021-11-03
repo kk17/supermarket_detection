@@ -9,7 +9,8 @@ class ObjectDetection:
                  label_map_path=None,
                  min_score_thresh=0.3,
                  detect_every_n_frame=80,
-                 class_name_to_csv_header_mapping=None):
+                 class_name_to_csv_header_mapping=None,
+                 post_processing=None):
         self.load_model_from_checkpoint = load_model_from_checkpoint
         self.model_dir = model_dir
         self.pipeline_config_path = pipeline_config_path
@@ -19,6 +20,17 @@ class ObjectDetection:
         self.min_score_thresh = min_score_thresh
         self.detect_every_n_frame = detect_every_n_frame
         self.class_name_to_csv_header_mapping = class_name_to_csv_header_mapping
+        self.post_processing = ObjectDetectionPostProcessing(**post_processing)
+
+
+class ObjectDetectionPostProcessing:
+    def __init__(self,
+                 merge_bounding_box_for_classes=None,
+                 use_classifer_for_classes=None,
+                 merge_min_iou_thresh=0.0):
+        self.merge_bounding_box_for_classes = merge_bounding_box_for_classes
+        self.use_classifer_for_classes = use_classifer_for_classes
+        self.merge_min_iou_thresh = merge_min_iou_thresh
 
 
 class Config:
