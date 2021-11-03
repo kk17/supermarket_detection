@@ -4,21 +4,31 @@ from object_detection.utils import label_map_util
 from object_detection.utils import config_util
 from object_detection.builders import model_builder
 from functools import partial
-
+from tensorflow.keras.models import load_model 
+from PIL import Image
+import numpy as np
 
 def load_classificaton_model(model_path):
-    # TODO: chengdi
-    pass
+   # TODO: chengdi
+    return load_model(model_path)
+    
 
-def make_prediction(image_np):
+def make_prediction(image_np,model):
     """make a prediction
 
     Args:
         image_np: image in numpy ndarray
-    return 0: textbook, 1: creal box, 3: none of both #TODO can change this return format
+        model: Model for prediction
+    Args 0: 0: textbook, 1: creal box
+    Args 1: array[score of book, score of box] directly from preduction 
     """
     # TODO: chengdi
-    pass
+    image = Image.fromarray(data)
+    inputImage = np.array(image.resize((224,224)))
+    inputData = np.reshape(inputImage,(1,  224, 224, 3))
+    result = model.predict(inputData)
+   
+    return result.argmax(axis=1)[0], result[0]
 
 def load_saved_model(model_path):
     # Load saved model and build the detection function
