@@ -116,6 +116,7 @@ def detect_from_directory(detection_model,
                         export_images,
                         inputpath,
                         outputpath,
+                        class_name_to_csv_header_mapping,
                         min_score_thresh=0.3):
     
     stopwatch_all = Stopwatch()
@@ -168,10 +169,14 @@ def detect_from_directory(detection_model,
                 if scores is None or scores[i] > min_score_thresh:
                     if classes[i] in category_index.keys():
                         class_name = category_index[classes[i]]['name']
+                        if class_name_to_csv_header_mapping:
+                            header = class_name_to_csv_header_mapping[class_name]
+                        else:
+                            header = class_name
                         try:
-                            item_count[class_name] += 1 
+                            item_count[header] += 1 
                         except:
-                            item_count[class_name] = 1 
+                            item_count[header] = 1 
                             
             pred_df = pred_df.append(item_count, ignore_index=True) 
             logging.info(f'result:\n{pred_df.iloc[-1,:]}\nused time: {stopwatch}') 
@@ -210,7 +215,10 @@ def main():
     logging.info("Loading model")
     stopwatch.start()
     model, catagory = load_model_and_category_index(cfg)
-    class_names = [catagory[index]['name']  for index in catagory.keys()] 
+    if cfg.class_name_to_csv_header_mapping:
+        headers = ['Id'] + [header for header in cfg.class_name_to_csv_header_mapping.values()] 
+    else:
+        headers = ['Id'] + [catagory[index]['name']  for index in catagory.keys()] 
     logging.info(f"Loaded model, time: {stopwatch}")
     logging.info('initiating model')
     stopwatch.restart()
@@ -226,14 +234,15 @@ def main():
                         min_score_thresh=cfg.min_score_thresh,
                         detect_every_n_frame=cfg.detect_every_n_frame)
     else:  
-        pred_df = pd.DataFrame(columns=['Id'] + class_names)  
+        pred_df = pd.DataFrame(columns=headers)  
         pred_df = detect_from_directory(model,
                         catagory,
                         pred_df,
                         args.export_images,
                         inputpath=args.inputpath,
                         outputpath=args.outputpath,
-                        min_score_thresh=cfg.min_score_thresh)
+                        min_score_thresh=cfg.min_score_thresh,
+                        class_name_to_csv_header_mapping=cfg.class_name_to_csv_header_mapping)
         try:
             pred_df['Id'] = pred_df['Id'].astype(int)
         except:

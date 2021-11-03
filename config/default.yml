@@ -1,5 +1,12 @@
 object_detection:
   label_map_path: workspace/data/custom01/label_map.pbtxt
+  class_name_to_csv_header_mapping:
+    Apple: Apples
+    Banana: Banana
+    Orange: Oranges
+    Book: Textbooks
+    Cerealbox: Cereal Boxes
+
 
   # the save model's performance is bad, don't know why. maybe due no preprossing?
   # we should use load from checkpoint first untile we solve this problem
@@ -20,3 +27,7 @@ object_detection:
   checkpoint_no: 0
   min_score_thresh: 0.4
   detect_every_n_frame: 80
+  # post_processing:
+  #   merge_bounding_box_for_classes: Banana
+  #   use_classifer_for_classes:
+  #     - C
