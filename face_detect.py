@@ -7,6 +7,8 @@ import pickle
 import sys
 import os
 import argparse
+import stopwatch
+from stopwatch import Stopwatch
 from facenet.architecture import *
 from facenet.preprocessing import normalize,l2_normalizer
 
@@ -94,9 +96,12 @@ def main():
                         "-s",
                         action="store_true")
     args = parser.parse_args()
-        
+    
+    stopwatch = Stopwatch()    
     (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
-
+    logging.info(f'Using CV version {major_ver}.{minor_ver}.{subminor_ver}')
+    
+    logging.info('Opening video')
     if args.inputpath == '':
         cap = cv2.VideoCapture(0)
     else:
@@ -114,26 +119,42 @@ def main():
     
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    logging.info(f'Video size : {width} x {height}')
+    
     writer = None
 
     if args.outputpath != '':
         writer = cv2.VideoWriter(args.outputpath, cv2.VideoWriter_fourcc(*'DIVX'), fps, (width,height))
         
     detect_every_n_frame = round(fps * args.detection_interval)
+    logging.info(f'Running face detection every {detect_every_n_frame} frames')
+    
+    logging.info('Initiating model')
+    stopwatch.start()
+    # make a detection using a fake image to initiate the model
+    fake_iamge_np = np.zeros((height, width, 3)).astype('float32')
+    pt_1, pt_2, name, distance = detect(fake_iamge_np , face_detector , face_encoder , encoding_dict)
+    logging.info(f'model initiated time: {stopwatch}')
+    stopwatch.stop()
+    
     f = 0
+    stopwatch_all = Stopwatch()
+    stopwatch_all.start()
     while True:
         # Read frame from camera
-        ret, frame = cap.read()      
+        ret, frame = cap.read()    
         key = cv2.waitKey(1)
-       
-        if not ret:
-            break
 
+        if not ret:
+            logging.info(f'Completed for all frames in the video. Total used time: {stopwatch_all}')
+            break
+        
+        stopwatch.restart()
         if f % detect_every_n_frame == 0:
             logging.info(f'Start detect frame: {f}')
             pt_1, pt_2, name, distance = detect(frame , face_detector , face_encoder , encoding_dict)
             frame = draw_bounding_box(frame, pt_1, pt_2, name, distance)
-            logging.info(f'Finished dectect frame: {f}')
+            logging.info(f'Finished detect frame: {f}\n\tUsed time: {stopwatch}')
         else:
             frame = draw_bounding_box(frame, pt_1, pt_2, name, distance)
             
@@ -144,6 +165,7 @@ def main():
             writer.write(frame)
         # cv2.waitKey(int(1/fps*1000))
         if key & 0xFF == ord('q'):
+            logging.info(f'face_detect.py terminated using \'q\' key. Total used time: {stopwatch_all}')
             break
         f+=1
 
