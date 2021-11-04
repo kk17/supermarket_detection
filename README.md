@@ -45,7 +45,7 @@ For Windows user, you need manual to install `Protobufs` first, pleas follow the
 
 *   Add `<PATH_TO_PB>\bin` to your `Path` environment variable (see [Environment Setup](https://tensorflow-object-detection-api-tutorial.readthedocs.io/en/latest/install.html#set-env))
 
-## Install WSL for running bash
+#### Install WSL for running bash script
 [Install WSL | Microsoft Docs](https://docs.microsoft.com/en-us/windows/wsl/install)
   
 ### 1. init 
