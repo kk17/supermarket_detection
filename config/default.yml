@@ -28,7 +28,8 @@ object_detection:
   min_score_thresh: 0.4
   detect_every_n_frame: 80
   post_processing:
-    reduce_high_iou_bounding_boxes:
+    remove_too_small_bounding_box_max_area: 0.01
+    remove_high_iou_bounding_boxes:
       min_iou_thresh: 0.85
       # when two scores are the same pick the class whos index is large 
       class_weight_order: 

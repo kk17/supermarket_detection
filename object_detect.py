@@ -143,14 +143,13 @@ def merge_bounding_box_for_one_class(class_name_to_iou_map, category_index,
     return np.asarray(boxes), np.asarray(classes), np.asarray(scores)
 
 
-def reduce_high_iou_bounding_boxes(min_iou_thresh, class_weight_order, category_index,
+def remove_high_iou_bounding_boxes(min_iou_thresh, class_weight_order, category_index,
                                    boxes, classes, scores, round_ndigits=2):
     logging.debug(f"min_iou_thresh: {min_iou_thresh}")
     n = len(boxes)
     class_names = [category_index[c]['name'] for c in classes]
     name_to_ids = {category_index[c]['name']: c for c in category_index.keys()}
     id_to_weights = {name_to_ids[c]: w for w, c in enumerate(class_weight_order)}
-    n = len(boxes)
     removed = [False] * n
     for i in range(n):
         if removed[i]:
@@ -173,6 +172,23 @@ def reduce_high_iou_bounding_boxes(min_iou_thresh, class_weight_order, category_
     _n = len(boxes)
     if n - _n > 0:
         logging.info(f'Reduced {n - _n} boxes for all classes in post processing')
+    return np.asarray(boxes), np.asarray(classes), np.asarray(scores)
+
+def remove_too_small_bounding_boxes(max_area_thresh, boxes, classes, scores):
+    logging.debug(f"max_area_thresh: {max_area_thresh}")
+    n = len(boxes)
+    removed = [False] * n
+    for i, b in enumerate(boxes):
+        area = (b[2] - b[0]) * (b[3] - b[1])
+        logging.debug(f'box{i} area: {area}')
+        if area < max_area_thresh:
+            removed[i] = True
+    boxes = [boxes[i] for i in range(n) if not removed[i]]
+    classes = [classes[i] for i in range(n) if not removed[i]]
+    scores = [scores[i] for i in range(n) if not removed[i]]
+    _n = len(boxes)
+    if n - _n > 0:
+        logging.info(f'Reduced {n - _n} too small boxes in post processing')
     return np.asarray(boxes), np.asarray(classes), np.asarray(scores)
 
 
@@ -280,15 +296,21 @@ def detect_from_directory(cfg,
                     category_index, boxes, classes, scores)
                 logging.info(f'Merged bounding boxes, time: {sw_step}')
 
-            if cfg.post_processing.reduce_high_iou_bounding_boxes:
+            if cfg.post_processing.remove_high_iou_bounding_boxes:
                 sw_step.restart()
-                logging.info(f'Reduce high iou bounding boxes')
-                boxes, classes, scores = reduce_high_iou_bounding_boxes(
-                    cfg.post_processing.reduce_high_iou_bounding_boxes.min_iou_thresh,
-                    cfg.post_processing.reduce_high_iou_bounding_boxes.class_weight_order,
+                logging.info(f'Remove high iou bounding boxes')
+                boxes, classes, scores = remove_high_iou_bounding_boxes(
+                    cfg.post_processing.remove_high_iou_bounding_boxes.min_iou_thresh,
+                    cfg.post_processing.remove_high_iou_bounding_boxes.class_weight_order,
                     category_index, boxes, classes, scores)
-                logging.info(f'Reduced high iou bounding boxes, time: {sw_step}')
-
+                logging.info(f'Removed high iou bounding boxes, time: {sw_step}')
+            
+            if cfg.post_processing.remove_too_small_bounding_box_max_area:
+                sw_step.restart()
+                logging.info(f'Remove too small bounding boxes')
+                boxes, classes, scores = remove_too_small_bounding_boxes(
+                    cfg.post_processing.remove_too_small_bounding_box_max_area, boxes, classes, scores)
+                logging.info(f'Removed too small bounding boxes, time: {sw_step}')
 
             #draw bounding box
             if export_images:
