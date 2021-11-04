@@ -12,55 +12,65 @@ def is_overlapping_1d(line1, line2):
 
 
 def are_boxes_overlaping(box1, box2):
-    """ Bboxes are in [top-left-x, top-left-y, width, height] format
+    """ Bboxes are in [y_min, x_min, y_max, x_max] format
 
-    >>> are_boxes_overlaping((1, 1, 5, 5), (2, 2, 5, 5))
+    >>> are_boxes_overlaping((1, 1, 6, 6), (2, 2, 7, 7))
     True
-    >>> are_boxes_overlaping((1, 1, 5, 5), (0, 2, 5, 5))
+    >>> are_boxes_overlaping((1, 1, 6, 6), (0, 2, 5, 7))
     True
-    >>> are_boxes_overlaping((1, 1, 5, 5), (3, 7, 1, 5))
+    >>> are_boxes_overlaping((1, 1, 6, 6), (3, 7, 4, 12))
     False
     """
-    # Bboxes are in [top-left-x, top-left-y, width, height] format
-    tlx1, tly1, w1, h1 = box1
-    tlx2, tly2, w2, h2 = box2
-    brx1, bry1 = tlx1 + w1, tly1 + h1
-    brx2, bry2 = tlx2 + w2, tly2 + h2
+    tly1, tlx1, bry1, brx1 = box1
+    tly2, tlx2, bry2, brx2 = box2
     return is_overlapping_1d((tlx1, brx1), (tlx2, brx2)) and is_overlapping_1d(
         (tly1, bry1), (tly2, bry2))
 
 
 def merge_two_boxes(box1, box2):
-    """ Bboxes are in [top-left-x, top-left-y, width, height] format
+    """ Bboxes are in [y_min, x_min, y_max, x_max] format
 
-    >>> merge_two_boxes((1, 1, 5, 5), (2, 2, 5, 5))
-    (1, 1, 6, 6)
-    >>> merge_two_boxes((1, 1, 5, 5), (0, 2, 5, 5))
-    (0, 1, 6, 6)
+    >>> merge_two_boxes((1, 1, 6, 6), (2, 2, 7, 7))
+    (1, 1, 7, 7)
+    >>> merge_two_boxes((1, 1, 6, 6), (0, 2, 5, 7))
+    (0, 1, 6, 7)
     """
-    tlx1, tly1, w1, h1 = box1
-    tlx2, tly2, w2, h2 = box2
-    brx1, bry1 = tlx1 + w1, tly1 + h1
-    brx2, bry2 = tlx2 + w2, tly2 + h2
-
+    tly1, tlx1, bry1, brx1 = box1
+    tly2, tlx2, bry2, brx2 = box2
     xmin, xmax = min(tlx1, tlx2), max(brx1, brx2)
     ymin, ymax = min(tly1, tly2), max(bry1, bry2)
-    w = xmax - xmin
-    h = ymax - ymin
-    return (xmin, ymin, w, h)
+    return (ymin, xmin, ymax, xmax)
 
 
 def bb_intersection_over_union(box1, box2):
+    """ Bboxes are in [y_min, x_min, y_max, x_max] format
+
+    >>> bb_intersection_over_union((1, 1, 6, 6), (2, 2, 7, 7))
+    0.47058823529411764
+    >>> bb_intersection_over_union((1, 1, 6, 6), (0, 2, 5, 7))
+    0.47058823529411764
+    >>> bb_intersection_over_union((1, 1, 6, 6), (3, 7, 4, 12))
+    0
+    >>> bb_intersection_over_union((1, 1, 6, 6), (1, 1, 6, 6))
+    1.0
+    >>> bb_intersection_over_union((0, 0, 0.5, 0.5), (0, 0, 0.5, 0.5))
+    1.0
+    >>> bb_intersection_over_union((0, 0, 0.5, 0.5), (0.5, 0.5, 1, 1))
+    0
+    """
     # determine the (x, y)-coordinates of the intersection rectangle
-    tlx1, tly1, w1, h1 = box1
-    tlx2, tly2, w2, h2 = box2
-    brx1, bry1 = tlx1 + w1, tly1 + h1
-    brx2, bry2 = tlx2 + w2, tly2 + h2
+    tly1, tlx1, bry1, brx1 = box1
+    tly2, tlx2, bry2, brx2 = box2
+    h1, w1 = bry1 - tly1, brx1 - tlx1
+    h2, w2 = bry2 - tly2, brx2 - tlx2
     xa, xb = max(tlx1, tlx2), min(brx1, brx2)
     ya, yb = max(tly1, tly2), min(bry1, bry2)
+    # print(f'xa, xb:{xa}, {xb}')
+    # print(f'ya, yb:{ya}, {yb}')
 
     # compute the area of intersection rectangle
     interArea = abs(max((xb - xa, 0)) * max((yb - ya), 0))
+    # print(f'interArea:{interArea}')
     if interArea == 0:
         return 0
     # compute the area of both the prediction and ground-truth
@@ -77,11 +87,13 @@ def bb_intersection_over_union(box1, box2):
 
 def merge_bounding_boxes(boxes, class_names, scores, merge_min_iou_thresh):
     """
-    >>> boxes=[(1, 1, 5, 5), (0, 8, 5, 2), (0, 2, 5, 5)]
+    >>> boxes=[(1, 1, 6, 6), (0, 8, 5, 10), (0, 2, 7, 7)]
     >>> class_names=['a', 'b', 'c']
     >>> scores=[0.8, 0.7, 0.6]
-    >>> merge_bounding_boxes(boxes, class_names, scores)
-    ([(0, 1, 6, 6), (0, 8, 5, 2)], ['a', 'b'], [0.8, 0.7])
+    >>> merge_bounding_boxes(boxes, class_names, scores, 0.3)
+    ([(0, 1, 7, 7), (0, 8, 5, 10)], ['a', 'b'], [0.8, 0.7])
+    >>> merge_bounding_boxes(boxes, class_names, scores, 0.6)
+    ([(1, 1, 6, 6), (0, 8, 5, 10), (0, 2, 7, 7)], ['a', 'b', 'c'], [0.8, 0.7, 0.6])
     """
     n = len(boxes)
     merged = [False] * n
@@ -90,12 +102,11 @@ def merge_bounding_boxes(boxes, class_names, scores, merge_min_iou_thresh):
     for i in range(n):
         if merged[i]:
             continue
-        for j in range(i + 1, n):
-            if merged[j]:
+        for j in range(n):
+            if i == j or merged[j]:
                 continue
-            if are_boxes_overlaping(
-                    boxes[i], boxes[j]) and bb_intersection_over_union(
-                        boxes[i], boxes[j]) >= merge_min_iou_thresh:
+            # print(bb_intersection_over_union(boxes[i], boxes[j]))
+            if bb_intersection_over_union(boxes[i], boxes[j]) >= merge_min_iou_thresh:
                 boxes[i] = merge_two_boxes(boxes[i], boxes[j])
                 merged[j] = True
                 scores[i] = max(scores[i], scores[j])

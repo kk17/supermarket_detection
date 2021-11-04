@@ -136,9 +136,10 @@ def merge_bounding_box_for_classes(class_name_to_iou_map, category_index,
         boxes = rest_boxes + _boxes
         class_names = rest_class_names + _class_names
         scores = rest_scores + _scores
-    classes = [name_to_ids[cn] for cn in class_names]
-    _n = len(boxes)
-    logging.info(f'{n - _n} boxes are reduced by post processing merge')
+        classes = [name_to_ids[cn] for cn in class_names]
+        _n = len(boxes)
+        if n - _n > 0:
+            logging.info(f'Reduced {n - _n} boxes for class {_cn} in post processing')
     return np.asarray(boxes), np.asarray(classes), np.asarray(scores)
 
 
@@ -199,10 +200,13 @@ def detect_from_directory(cfg,
         os.makedirs(outputpath)
 
     filenames = os.listdir(inputpath)
+    image_filename_pattern = re.compile('.+\.(png|jpg)$', re.IGNORECASE)
 
     stopwatch = Stopwatch()
     stopwatch.start()
     for filename in filenames:
+        if not image_filename_pattern.search(filename):
+            continue
         filepath = f'{inputpath}/{filename}'
         stopwatch.restart()
         logging.info(f'loading image file: {filepath}')
@@ -308,19 +312,23 @@ def main():
         headers = ['Id'
                    ] + [catagory[index]['name'] for index in catagory.keys()]
     logging.info(f"Loaded model, time: {stopwatch}")
-    logging.info('initiating model')
+    logging.info('Initiating  object detection model')
     stopwatch.restart()
     # make a detection using a fake image to initiate the model
     fake_iamge_np = np.zeros((100, 100, 3))
     detect_from_image_numpy(model, fake_iamge_np)
-    logging.info(f'model initiated time: {stopwatch}')
+    logging.info(f'Model initiated, time: {stopwatch}')
     stopwatch.stop()
 
     classifer_model = None
     if cfg.post_processing.use_classifer_for_classes:
+        stopwatch.restart()
+        logging.info('Load and init classifer detection model')
         classifer_model = model_utils.load_classificaton_model(
             cfg.post_processing.classifier_model_path)
-
+        classifer_model.predict(np.ones((1, 224, 224, 3)))
+        logging.info(f"Loaded model, time: {stopwatch}")
+        stopwatch.stop()
     if args.camera:
         detect_from_camera(model,
                            catagory,
