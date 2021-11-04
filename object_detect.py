@@ -176,8 +176,8 @@ def use_classifer_for_classes(classifer_model, classname_to_id_map, image_np,
             if _s > s and _c != c:
                 cn, _cn = category_index[c]['name'], category_index[_c]['name']
                 logging.info(
-                    f'Replace class {cn} to {_cn} from classifier result')
-                classes[indexes] = _c
+                    f'Replace box {index} class {cn} to {_cn} from classifier result')
+                classes[index] = _c
                 scores[index] = _s
 
 
@@ -199,7 +199,11 @@ def detect_from_directory(cfg,
     if not os.path.exists(outputpath):
         os.makedirs(outputpath)
 
-    filenames = os.listdir(inputpath)
+    if os.path.isfile(inputpath):
+        filenames = [os.path.basename(inputpath)]
+        inputpath = os.path.dirname(inputpath)
+    else:
+        filenames = os.listdir(inputpath)
     image_filename_pattern = re.compile('.+\.(png|jpg)$', re.IGNORECASE)
 
     sw_image = Stopwatch()
@@ -226,14 +230,6 @@ def detect_from_directory(cfg,
                        label_id_offset).astype(int)
             scores = detections['detection_scores'][0].numpy()
 
-            if cfg.post_processing.merge_bounding_box_for_classes:
-                sw_step.restart()
-                logging.info(f'Merge bounding boxes')
-                boxes, classes, scores = merge_bounding_box_for_classes(
-                    cfg.post_processing.merge_bounding_box_for_classes,
-                    category_index, boxes, classes, scores)
-                logging.info(f'Merged bounding boxes, time: {sw_step}')
-
             if cfg.post_processing.use_classifer_for_classes:
                 sw_step.restart()
                 logging.info(f'Do additional classification')
@@ -242,6 +238,16 @@ def detect_from_directory(cfg,
                     cfg.post_processing.use_classifer_for_classes, image_np,
                     category_index, boxes, classes, scores)
                 logging.info(f'Finish additional classification, time: {sw_step}')
+
+            if cfg.post_processing.merge_bounding_box_for_classes:
+                sw_step.restart()
+                logging.info(f'Merge bounding boxes')
+                boxes, classes, scores = merge_bounding_box_for_classes(
+                    cfg.post_processing.merge_bounding_box_for_classes,
+                    category_index, boxes, classes, scores)
+                logging.info(f'Merged bounding boxes, time: {sw_step}')
+
+
             #draw bounding box
             if export_images:
                 logging.info(f'Visualize boxes')
@@ -315,7 +321,18 @@ def main():
                         default='workspace/output/test')
     parser.add_argument("--export_images", "-e", action="store_true")
     parser.add_argument("--camera", "-c", action="store_true")
+    parser.add_argument("--verbose", "-v", action="store_true")
     args = parser.parse_args()
+
+    level = logging.INFO
+    if args.verbose:
+        level = logging.DEBUG
+    logging.basicConfig(
+        level=level,
+        format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s: %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S')
+
+
     cfg = config.load_from_yaml(args.config).object_detection
     stopwatch = Stopwatch()
 
@@ -381,9 +398,4 @@ if __name__ == '__main__':
     # root = logging.getLogger()
     # list(map(root.removeHandler, root.handlers))
     # list(map(root.removeFilter, root.filters))
-
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s: %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S')
     main()

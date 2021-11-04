@@ -32,7 +32,7 @@ object_detection:
       # class_name merge_min_iou_thresh
       Banana: 0.2
       Orange: 0.7
-      Cerealbox: 0.7
+      Cerealbox: 0.5
       Book: 0.7
       Apple: 0.9
     classifier_model_path: workspace/classifier/best1.h5

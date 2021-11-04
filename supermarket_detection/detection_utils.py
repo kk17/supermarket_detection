@@ -1,3 +1,5 @@
+import logging
+
 def is_overlapping_1d(line1, line2):
     """line are in [min, max] format
 
@@ -57,7 +59,10 @@ def bb_intersection_over_union(box1, box2):
     1.0
     >>> bb_intersection_over_union((0, 0, 0.5, 0.5), (0.5, 0.5, 1, 1))
     0
+    >>> bb_intersection_over_union((0, 0, 0.5, 0.5), (0.5, 0.5, 1, 1))
+    0
     """
+    ## box0: [0.50290835 0.00301954 0.93094087 0.503685  ] box1:[0.01598904 0.16670051 0.6182177  0.81539595] iou: 0.06863983311526284
     # determine the (x, y)-coordinates of the intersection rectangle
     tly1, tlx1, bry1, brx1 = box1
     tly2, tlx2, bry2, brx2 = box2
@@ -105,8 +110,9 @@ def merge_bounding_boxes(boxes, class_names, scores, merge_min_iou_thresh):
         for j in range(n):
             if i == j or merged[j]:
                 continue
-            # print(bb_intersection_over_union(boxes[i], boxes[j]))
-            if bb_intersection_over_union(boxes[i], boxes[j]) >= merge_min_iou_thresh:
+            iou = bb_intersection_over_union(boxes[i], boxes[j])
+            logging.debug(f'Class {class_names[0]} merge_min_iou_thresh {merge_min_iou_thresh}, box{i}: {boxes[i]} box{j}:{boxes[j]} iou: {iou}')
+            if iou >= merge_min_iou_thresh:
                 boxes[i] = merge_two_boxes(boxes[i], boxes[j])
                 merged[j] = True
                 scores[i] = max(scores[i], scores[j])
