@@ -202,21 +202,24 @@ def detect_from_directory(cfg,
     filenames = os.listdir(inputpath)
     image_filename_pattern = re.compile('.+\.(png|jpg)$', re.IGNORECASE)
 
-    stopwatch = Stopwatch()
-    stopwatch.start()
+    sw_image = Stopwatch()
+    sw_step = Stopwatch()
     for filename in filenames:
         if not image_filename_pattern.search(filename):
             continue
         filepath = f'{inputpath}/{filename}'
-        stopwatch.restart()
-        logging.info(f'loading image file: {filepath}')
+        sw_image.restart()
+        sw_step.restart()
+        logging.info(f'Loading image file: {filepath}')
         # image_np = load_image_into_numpy_array(filepath)
         image_np = io.imread(filepath)
+        logging.info(f'Loaded image file, time: {sw_step}')
         if len(image_np.shape) < 3:
             continue
-        logging.info(f'start detection for file: {filepath}')
+        logging.info(f'Start detection for file: {filepath}')
+        sw_step.restart()
         detections = detect_from_image_numpy(detection_model, image_np)
-        logging.info(f'counting result for file: {filepath}')
+        logging.info(f'Finished dection, time: {sw_step}')
         if detections:
             boxes = detections['detection_boxes'][0].numpy()
             classes = (detections['detection_classes'][0].numpy() +
@@ -224,17 +227,25 @@ def detect_from_directory(cfg,
             scores = detections['detection_scores'][0].numpy()
 
             if cfg.post_processing.merge_bounding_box_for_classes:
+                sw_step.restart()
+                logging.info(f'Merge bounding boxes')
                 boxes, classes, scores = merge_bounding_box_for_classes(
                     cfg.post_processing.merge_bounding_box_for_classes,
                     category_index, boxes, classes, scores)
+                logging.info(f'Merged bounding boxes, time: {sw_step}')
 
             if cfg.post_processing.use_classifer_for_classes:
+                sw_step.restart()
+                logging.info(f'Do additional classification')
                 use_classifer_for_classes(
                     classifer_model,
                     cfg.post_processing.use_classifer_for_classes, image_np,
                     category_index, boxes, classes, scores)
+                logging.info(f'Finish additional classification, time: {sw_step}')
             #draw bounding box
             if export_images:
+                logging.info(f'Export image to {outputpath}/{filename}')
+                sw_step.restart()
                 viz_utils.visualize_boxes_and_labels_on_image_array(
                     image_np,
                     boxes,
@@ -247,6 +258,7 @@ def detect_from_directory(cfg,
                     agnostic_mode=False)
                 viz_utils.save_image_array_as_png(image_np,
                                                   f'{outputpath}/{filename}')
+                logging.info(f'Exported image, time: {sw_step}')
                 # im_bgr = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
                 # cv2.imwrite(f'{outputpath}/{filename}', im_bgr)
 
@@ -254,7 +266,8 @@ def detect_from_directory(cfg,
             item_count = {}
             item_count['Id'] = re.findall(r'(.*)(?:\.)', filename)[0]
             logging.info(item_count['Id'])
-
+            logging.info(f'Start counting')
+            sw_step.restart()
             for i in range(scores.shape[0]):
                 if scores is None or scores[i] > min_score_thresh:
                     if classes[i] in category_index.keys():
@@ -270,8 +283,9 @@ def detect_from_directory(cfg,
                             item_count[header] = 1
 
             pred_df = pred_df.append(item_count, ignore_index=True)
+            logging.info(f'Finished counting, time: {sw_step}')
             logging.info(
-                f'result:\n{pred_df.iloc[-1,:]}\nused time: {stopwatch}')
+                f'result:\n{pred_df.iloc[-1,:]}\nused time: {sw_image}')
     logging.info(f"Completed predictions. Total used time: {stopwatch_all}")
     return pred_df
 
