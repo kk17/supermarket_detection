@@ -27,10 +27,12 @@ class ObjectDetectionPostProcessing:
     def __init__(self,
                  merge_bounding_box_for_classes=None,
                  use_classifer_for_classes=None,
-                 merge_min_iou_thresh=0.0):
+                 merge_min_iou_thresh=0.0,
+                 classifier_model_path=None):
         self.merge_bounding_box_for_classes = merge_bounding_box_for_classes
         self.use_classifer_for_classes = use_classifer_for_classes
         self.merge_min_iou_thresh = merge_min_iou_thresh
+        self.classifier_model_path = classifier_model_path
 
 
 class Config:

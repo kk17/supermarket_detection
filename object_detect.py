@@ -7,7 +7,7 @@ import numpy as np
 import cv2
 import stopwatch
 # from supermarket_detection.dataset_utils import load_image_into_numpy_array
-from supermarket_detection import model_utils, config, detection_utils
+from supermarket_detection import model_utils, config, detection_utils, image_utils
 import tensorflow as tf
 import os
 from object_detection.utils import visualization_utils as viz_utils
@@ -114,34 +114,70 @@ def detect_from_camera(detection_model,
     cv2.destroyAllWindows()
 
 
-def post_processing_detections(post_processing_cfg, category_index, boxes,
-                               classes, scores):
-    if post_processing_cfg.merge_bounding_box_for_classes:
-        n = len(boxes)
-        class_names = [category_index[c]['name'] for c in classes]
-        name_to_ids = {category_index[c]['name']: c for c in classes}
-        for _cn in post_processing_cfg.merge_bounding_box_for_classes:
-            rest_boxes, rest_class_names, rest_scores = [], [], []
-            _boxes, _class_names, _scores = [], [], []
-            for b, cn, s in zip(boxes, class_names, scores):
-                if cn == _cn:
-                    _boxes.append(b)
-                    _class_names.append(cn)
-                    _scores.append(s)
-                else:
-                    rest_boxes.append(b)
-                    rest_class_names.append(cn)
-                    rest_scores.append(s)
-            _boxes, _class_names, _scores = detection_utils.merge_bounding_boxes(
-                _boxes, _class_names, _scores,
-                post_processing_cfg.merge_min_iou_thresh)
-            boxes = rest_boxes + _boxes
-            class_names = rest_class_names + _class_names
-            scores = rest_scores + _scores
-        classes = [name_to_ids[cn] for cn in class_names]
-        _n = len(boxes)
-        logging.info(f'{n - _n} boxes are reduced by postprocessing merge')
+def merge_bounding_box_for_classes(class_name_to_iou_map, category_index,
+                                   boxes, classes, scores):
+    n = len(boxes)
+    class_names = [category_index[c]['name'] for c in classes]
+    name_to_ids = {category_index[c]['name']: c for c in classes}
+    for _cn, merge_min_iou_thresh in class_name_to_iou_map.items():
+        rest_boxes, rest_class_names, rest_scores = [], [], []
+        _boxes, _class_names, _scores = [], [], []
+        for b, cn, s in zip(boxes, class_names, scores):
+            if cn == _cn:
+                _boxes.append(b)
+                _class_names.append(cn)
+                _scores.append(s)
+            else:
+                rest_boxes.append(b)
+                rest_class_names.append(cn)
+                rest_scores.append(s)
+        _boxes, _class_names, _scores = detection_utils.merge_bounding_boxes(
+            _boxes, _class_names, _scores, merge_min_iou_thresh)
+        boxes = rest_boxes + _boxes
+        class_names = rest_class_names + _class_names
+        scores = rest_scores + _scores
+    classes = [name_to_ids[cn] for cn in class_names]
+    _n = len(boxes)
+    logging.info(f'{n - _n} boxes are reduced by post processing merge')
     return np.asarray(boxes), np.asarray(classes), np.asarray(scores)
+
+
+def use_classifer_for_classes(classifer_model, classname_to_id_map, image_np,
+                              category_index, boxes, classes, scores):
+    detect_name_to_ids = {category_index[c]['name']: c for c in category_index.keys()}
+    classifer_id_to_detect_id_map = {
+        cid: detect_name_to_ids[c]
+        for c, cid in classname_to_id_map.items()
+    }
+    detect_ids = set(
+        [detect_name_to_ids[cn] for cn in classname_to_id_map.keys()])
+    logging.debug(f'{detect_name_to_ids}: detect_name_to_ids')
+    logging.debug(f'{classifer_id_to_detect_id_map}: classifer_id_to_detect_id_map')
+    logging.debug(f'{detect_ids}: detect_ids')
+
+    indexes = []
+    images = []
+    for i, (b, c, s) in enumerate(zip(boxes, classes, scores)):
+        if c in detect_ids:
+            logging.debug(f'c: {c}')
+            indexes.append(i)
+            bb_image_np = image_utils.crop_by_bounding_box(image_np, b)
+            images.append(bb_image_np)
+
+    if images:
+        c_classes, _scores = model_utils.make_prediction(images, classifer_model)
+        for i, (cc, _s) in enumerate(zip(c_classes, _scores)):
+            index = indexes[i]
+            _c = classifer_id_to_detect_id_map[cc]
+            logging.debug(f'_c: {_c}')
+            c = classes[index]
+            s = scores[index]
+            if _s > s and _c != c:
+                cn, _cn = category_index[c]['name'], category_index[_c]['name']
+                logging.info(
+                    f'Replace class {cn} to {_cn} from classifier result')
+                classes[indexes] = _c
+                scores[index] = _s
 
 
 def detect_from_directory(cfg,
@@ -152,7 +188,8 @@ def detect_from_directory(cfg,
                           inputpath,
                           outputpath,
                           class_name_to_csv_header_mapping,
-                          min_score_thresh=0.3):
+                          min_score_thresh=0.3,
+                          classifer_model=None):
 
     stopwatch_all = Stopwatch()
     stopwatch_all.start()
@@ -171,6 +208,8 @@ def detect_from_directory(cfg,
         logging.info(f'loading image file: {filepath}')
         # image_np = load_image_into_numpy_array(filepath)
         image_np = io.imread(filepath)
+        if len(image_np.shape) < 3:
+            continue
         logging.info(f'start detection for file: {filepath}')
         detections = detect_from_image_numpy(detection_model, image_np)
         logging.info(f'counting result for file: {filepath}')
@@ -179,8 +218,17 @@ def detect_from_directory(cfg,
             classes = (detections['detection_classes'][0].numpy() +
                        label_id_offset).astype(int)
             scores = detections['detection_scores'][0].numpy()
-            boxes, classes, scores = post_processing_detections(
-                cfg.post_processing, category_index, boxes, classes, scores)
+
+            if cfg.post_processing.merge_bounding_box_for_classes:
+                boxes, classes, scores = merge_bounding_box_for_classes(
+                    cfg.post_processing.merge_bounding_box_for_classes,
+                    category_index, boxes, classes, scores)
+
+            if cfg.post_processing.use_classifer_for_classes:
+                use_classifer_for_classes(
+                    classifer_model,
+                    cfg.post_processing.use_classifer_for_classes, image_np,
+                    category_index, boxes, classes, scores)
             #draw bounding box
             if export_images:
                 viz_utils.visualize_boxes_and_labels_on_image_array(
@@ -268,6 +316,11 @@ def main():
     logging.info(f'model initiated time: {stopwatch}')
     stopwatch.stop()
 
+    classifer_model = None
+    if cfg.post_processing.use_classifer_for_classes:
+        classifer_model = model_utils.load_classificaton_model(
+            cfg.post_processing.classifier_model_path)
+
     if args.camera:
         detect_from_camera(model,
                            catagory,
@@ -284,7 +337,8 @@ def main():
                                         outputpath=args.outputpath,
                                         min_score_thresh=cfg.min_score_thresh,
                                         class_name_to_csv_header_mapping=cfg.
-                                        class_name_to_csv_header_mapping)
+                                        class_name_to_csv_header_mapping,
+                                        classifer_model=classifer_model)
         try:
             pred_df['Id'] = pred_df['Id'].astype(int)
         except:

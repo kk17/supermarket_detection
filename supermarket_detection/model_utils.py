@@ -9,26 +9,21 @@ from PIL import Image
 import numpy as np
 
 def load_classificaton_model(model_path):
-   # TODO: chengdi
     return load_model(model_path)
     
 
-def make_prediction(image_np,model):
+def make_prediction(images, model):
     """make a prediction
 
     Args:
-        image_np: image in numpy ndarray
+        images: list of image in numpy ndarray
         model: Model for prediction
     Args 0: 0: textbook, 1: creal box
     Args 1: array[score of book, score of box] directly from preduction 
     """
-    # TODO: chengdi
-    image = Image.fromarray(data)
-    inputImage = np.array(image.resize((224,224)))
-    inputData = np.reshape(inputImage,(1,  224, 224, 3))
-    result = model.predict(inputData)
-   
-    return result.argmax(axis=1)[0], result[0]
+    images = [tf.image.resize(img, (224,224)) for img in images]
+    result = model.predict(tf.convert_to_tensor(images))
+    return result.argmax(axis=1), result.max(axis=1)
 
 def load_saved_model(model_path):
     # Load saved model and build the detection function

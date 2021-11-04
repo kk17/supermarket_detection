@@ -28,9 +28,11 @@ object_detection:
   min_score_thresh: 0.4
   detect_every_n_frame: 80
   post_processing:
-    merge_min_iou_thresh: 0.2
-    merge_bounding_box_for_classes: 
-      - Banana
+    merge_bounding_box_for_classes:
+      # class_name merge_min_iou_thresh
+      Banana: 0.2
+    classifier_model_path: workspace/classifier/best1.h5
     use_classifer_for_classes:
-      - Cerealbox
-      - Book
+      # class_name classifer_class_id
+      Cerealbox: 1
+      Book: 0
