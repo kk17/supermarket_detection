@@ -7,6 +7,7 @@ Object detection uses the Tensorflow Object Detection API.
 
 ```bash
 ├── build_dataset.py # script for build dataset using fiftyone
+├── facenet # directory for scripts and files for object detection adapted from (https://github.com/R4j4n/Face-recognition-Using-Facenet-On-Tensorflow-2.X)
 ├── object_detect.py # script for loading a model and dectection
 ├── init.sh # script for install required packages 
 ├── notebooks # diretory for jupyter notebook
@@ -190,6 +191,36 @@ After that you can run the training and evaluation script with `--tpu` option. F
 ## Build a dataset for object detection
 
 Use fiftyone to get the require class from open image v6 dataset and build a TFOjbectDetectionDataset. Check notebooks: [building_dataset.ipynb](https://github.com/kk17/supermark_det/blob/main/notebooks/building_dataset.ipynb)
+
+## Train a face detection model
+The base for the scripts and models can be obtained in [R4j4n/Face-recognition-Using-Facenet-On-Tensorflow-2.X](https://github.com/R4j4n/Face-recognition-Using-Facenet-On-Tensorflow-2.X), but the codes have been adapted for this project.
+
+Get the adapted pre-trained weights in [Google Drive](https://drive.google.com/drive/folders/1wFknI4ydODah3YzpSw_MFjKw1Osk3jXS?usp=sharing), and paste in `/facenet` folder
+
+### 1. prepare face images
+
+Download the face images and put in subfolders in the `/facenet/Faces` directory, with each person's name as the subfolder name
+
+### 2. run training code
+```
+python ./facenet/train_v2.py
+```
+This will update `/facenet/encodings/encodings.pkl` and `/facenet/facenet_keras_weights.h5` according to the new face dataset.
+
+### 3. test model 
+run ./face_detect.py to test the model. Omit the inputpath argument to use camera instead.
+
+```
+Usage:
+python object_detect.py [options]
+
+General options:
+-i, --inputpath <path>      path to test video input file, will use camera if not set
+-o, --outputpath <path>     path to test video output file, will not export video if not set
+-d, --detection_interval    detect face every specified number of second(s) (default=0.5s)
+-s, --show                  display the labeled video as it is being processed
+-m, --multi_thread          use multithread processing to speed up
+```
 
 ## Reference
 ### Object detection
