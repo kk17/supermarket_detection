@@ -28,7 +28,16 @@ object_detection:
   min_score_thresh: 0.4
   detect_every_n_frame: 80
   post_processing:
-    merge_bounding_box_for_classes:
+    reduce_high_iou_bounding_boxes:
+      min_iou_thresh: 0.85
+      # when two scores are the same pick the class whos index is large 
+      class_weight_order: 
+        - Cerealbox
+        - Book
+        - Banana
+        - Orange
+        - Apple
+    merge_bounding_box_for_one_class:
       # class_name merge_min_iou_thresh
       Banana: 0.2
       Orange: 0.7

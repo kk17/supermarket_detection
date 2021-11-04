@@ -114,7 +114,7 @@ def detect_from_camera(detection_model,
     cv2.destroyAllWindows()
 
 
-def merge_bounding_box_for_classes(class_name_to_iou_map, category_index,
+def merge_bounding_box_for_one_class(class_name_to_iou_map, category_index,
                                    boxes, classes, scores):
     n = len(boxes)
     class_names = [category_index[c]['name'] for c in classes]
@@ -140,6 +140,39 @@ def merge_bounding_box_for_classes(class_name_to_iou_map, category_index,
         _n = len(boxes)
         if n - _n > 0:
             logging.info(f'Reduced {n - _n} boxes for class {_cn} in post processing')
+    return np.asarray(boxes), np.asarray(classes), np.asarray(scores)
+
+
+def reduce_high_iou_bounding_boxes(min_iou_thresh, class_weight_order, category_index,
+                                   boxes, classes, scores, round_ndigits=2):
+    logging.debug(f"min_iou_thresh: {min_iou_thresh}")
+    n = len(boxes)
+    class_names = [category_index[c]['name'] for c in classes]
+    name_to_ids = {category_index[c]['name']: c for c in category_index.keys()}
+    id_to_weights = {name_to_ids[c]: w for w, c in enumerate(class_weight_order)}
+    n = len(boxes)
+    removed = [False] * n
+    for i in range(n):
+        if removed[i]:
+            continue
+        for j in range(i+1, n):
+            if removed[j]:
+                continue
+            iou = detection_utils.bb_intersection_over_union(boxes[i], boxes[j])
+            logging.debug(f'Class {class_names[i]} box{i}: {boxes[i]} {class_names[j]} box{j}:{boxes[j]} iou: {iou}')
+            if iou >= min_iou_thresh:
+                remove_box_index = i
+                si, sj = round(scores[i], round_ndigits), round(scores[i], round_ndigits)
+                logging.debug(f'{scores[i]} {scores[j]}, {si} {sj}')
+                if si > sj or (si == sj and id_to_weights[classes[i]] > id_to_weights[classes[j]]):
+                    remove_box_index = j
+                removed[remove_box_index] = True
+    boxes = [boxes[i] for i in range(n) if not removed[i]]
+    classes = [classes[i] for i in range(n) if not removed[i]]
+    scores = [scores[i] for i in range(n) if not removed[i]]
+    _n = len(boxes)
+    if n - _n > 0:
+        logging.info(f'Reduced {n - _n} boxes for all classes in post processing')
     return np.asarray(boxes), np.asarray(classes), np.asarray(scores)
 
 
@@ -239,13 +272,22 @@ def detect_from_directory(cfg,
                     category_index, boxes, classes, scores)
                 logging.info(f'Finish additional classification, time: {sw_step}')
 
-            if cfg.post_processing.merge_bounding_box_for_classes:
+            if cfg.post_processing.merge_bounding_box_for_one_class:
                 sw_step.restart()
                 logging.info(f'Merge bounding boxes')
-                boxes, classes, scores = merge_bounding_box_for_classes(
-                    cfg.post_processing.merge_bounding_box_for_classes,
+                boxes, classes, scores = merge_bounding_box_for_one_class(
+                    cfg.post_processing.merge_bounding_box_for_one_class,
                     category_index, boxes, classes, scores)
                 logging.info(f'Merged bounding boxes, time: {sw_step}')
+
+            if cfg.post_processing.reduce_high_iou_bounding_boxes:
+                sw_step.restart()
+                logging.info(f'Reduce high iou bounding boxes')
+                boxes, classes, scores = reduce_high_iou_bounding_boxes(
+                    cfg.post_processing.reduce_high_iou_bounding_boxes.min_iou_thresh,
+                    cfg.post_processing.reduce_high_iou_bounding_boxes.class_weight_order,
+                    category_index, boxes, classes, scores)
+                logging.info(f'Reduced high iou bounding boxes, time: {sw_step}')
 
 
             #draw bounding box
