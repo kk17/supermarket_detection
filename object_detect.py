@@ -244,7 +244,7 @@ def detect_from_directory(cfg,
                 logging.info(f'Finish additional classification, time: {sw_step}')
             #draw bounding box
             if export_images:
-                logging.info(f'Export image to {outputpath}/{filename}')
+                logging.info(f'Visualize boxes')
                 sw_step.restart()
                 viz_utils.visualize_boxes_and_labels_on_image_array(
                     image_np,
@@ -256,8 +256,12 @@ def detect_from_directory(cfg,
                     max_boxes_to_draw=10,
                     min_score_thresh=min_score_thresh,
                     agnostic_mode=False)
-                viz_utils.save_image_array_as_png(image_np,
-                                                  f'{outputpath}/{filename}')
+                logging.info(f'Visualized boxes, time: {sw_step}')
+                logging.info(f'Export image to {outputpath}/{filename}')
+                sw_step.restart()
+                # viz_utils.save_image_array_as_png(image_np,
+                #                                   f'{outputpath}/{filename}')
+                io.imsave(f'{outputpath}/{filename}', image_np)
                 logging.info(f'Exported image, time: {sw_step}')
                 # im_bgr = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
                 # cv2.imwrite(f'{outputpath}/{filename}', im_bgr)
