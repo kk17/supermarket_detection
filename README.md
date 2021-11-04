@@ -31,7 +31,7 @@ Object detection uses the Tensorflow Object Detection API.
 
 Note: You can run the jupyter notebook [notebooks/training_on_cloud.ipynb](./notebooks/training_on_cloud.ipynb) to prepare training on Google colab. After you open vscode in colab, the follow steps are the same.
 
-### 0. install protobuf
+### 0. install protobuf(for Windows system)
 
 The Tensorflow Object Detection API uses Protobufs to configure model and training parameters. Before the framework can be used, the Protobuf libraries must be downloaded and compiled.
 
@@ -44,6 +44,9 @@ For Windows user, you need manual to install `Protobufs` first, pleas follow the
 *   Extract the contents of the downloaded `protoc-*-*.zip` in a directory `<PATH_TO_PB>` of your choice (e.g. `C:\Program Files\Google Protobuf`)
 
 *   Add `<PATH_TO_PB>\bin` to your `Path` environment variable (see [Environment Setup](https://tensorflow-object-detection-api-tutorial.readthedocs.io/en/latest/install.html#set-env))
+
+## Install WSL for running bash
+[Install WSL | Microsoft Docs](https://docs.microsoft.com/en-us/windows/wsl/install)
   
 ### 1. init 
 
