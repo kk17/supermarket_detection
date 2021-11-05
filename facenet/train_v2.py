@@ -1,4 +1,4 @@
-from facenet.architecture import * 
+from architecture import * 
 import os 
 import cv2
 import mtcnn
@@ -8,10 +8,10 @@ from sklearn.preprocessing import Normalizer
 from tensorflow.keras.models import load_model
 
 ######pathsandvairables#########
-face_data = 'Faces/'
+face_data = 'facenet/Faces/'
 required_shape = (160,160)
 face_encoder = InceptionResNetV2()
-path = "facenet_keras_weights.h5"
+path = "facenet/facenet_keras_weights.h5"
 face_encoder.load_weights(path)
 face_detector = mtcnn.MTCNN()
 encodes = []
@@ -51,7 +51,7 @@ for face_names in os.listdir(face_data):
         encode = l2_normalizer.transform(np.expand_dims(encode, axis=0))[0]
         encoding_dict[face_names] = encode
     
-path = 'encodings/encodings.pkl'
+path = 'facenet/encodings/encodings.pkl'
 with open(path, 'wb') as file:
     pickle.dump(encoding_dict, file)
 
