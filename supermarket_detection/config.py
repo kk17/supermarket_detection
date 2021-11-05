@@ -25,14 +25,14 @@ class ObjectDetection:
 
 class ObjectDetectionPostProcessing:
     def __init__(self,
-                 remove_too_small_bounding_box_max_area=None,
+                 remove_too_small_bounding_box_min_area=None,
                  remove_high_iou_bounding_boxes=None,
                  merge_bounding_box_for_one_class=None,
                  use_classifer_for_classes=None,
                  merge_min_iou_thresh=0.0,
                  classifier_model_path=None):
         self.remove_high_iou_bounding_boxes = ReduceHighIOUBoundingBoxesConfig(**remove_high_iou_bounding_boxes)
-        self.remove_too_small_bounding_box_max_area = remove_too_small_bounding_box_max_area
+        self.remove_too_small_bounding_box_min_area = remove_too_small_bounding_box_min_area
         self.merge_bounding_box_for_one_class = merge_bounding_box_for_one_class
         self.use_classifer_for_classes = use_classifer_for_classes
         self.merge_min_iou_thresh = merge_min_iou_thresh

@@ -25,10 +25,10 @@ object_detection:
   pipeline_config_path: workspace/exported_models/faster_rcnn_resnet50_v1_1024x1024/2021-10-29_v1/pipeline.config
   checkpoint_dir: workspace/exported_models/faster_rcnn_resnet50_v1_1024x1024/2021-10-29_v1/checkpoint
   checkpoint_no: 0
-  min_score_thresh: 0.4
+  min_score_thresh: 0.7
   detect_every_n_frame: 80
   post_processing:
-    remove_too_small_bounding_box_max_area: 0.01
+    remove_too_small_bounding_box_min_area: 0.007
     remove_high_iou_bounding_boxes:
       min_iou_thresh: 0.85
       # when two scores are the same pick the class whos index is large 

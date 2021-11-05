@@ -174,21 +174,22 @@ def remove_high_iou_bounding_boxes(min_iou_thresh, class_weight_order, category_
         logging.info(f'Reduced {n - _n} boxes for all classes in post processing')
     return np.asarray(boxes), np.asarray(classes), np.asarray(scores)
 
-def remove_too_small_bounding_boxes(max_area_thresh, boxes, classes, scores):
-    logging.debug(f"max_area_thresh: {max_area_thresh}")
+def remove_too_small_bounding_boxes(min_area_thresh, category_index, boxes, classes, scores):
+    logging.debug(f"min_area_thresh: {min_area_thresh}")
     n = len(boxes)
     removed = [False] * n
     for i, b in enumerate(boxes):
         area = (b[2] - b[0]) * (b[3] - b[1])
         logging.debug(f'box{i} area: {area}')
-        if area < max_area_thresh:
+        if area < min_area_thresh:
             removed[i] = True
+            logging.info(f'Removed too small box {category_index[classes[i]]}, area {area} < min_area_thresh: {min_area_thresh}')
     boxes = [boxes[i] for i in range(n) if not removed[i]]
     classes = [classes[i] for i in range(n) if not removed[i]]
     scores = [scores[i] for i in range(n) if not removed[i]]
     _n = len(boxes)
     if n - _n > 0:
-        logging.info(f'Reduced {n - _n} too small boxes in post processing')
+        logging.info(f'Removed {n - _n} too small boxes in post processing')
     return np.asarray(boxes), np.asarray(classes), np.asarray(scores)
 
 
@@ -305,11 +306,11 @@ def detect_from_directory(cfg,
                     category_index, boxes, classes, scores)
                 logging.info(f'Removed high iou bounding boxes, time: {sw_step}')
             
-            if cfg.post_processing.remove_too_small_bounding_box_max_area:
+            if cfg.post_processing.remove_too_small_bounding_box_min_area:
                 sw_step.restart()
                 logging.info(f'Remove too small bounding boxes')
                 boxes, classes, scores = remove_too_small_bounding_boxes(
-                    cfg.post_processing.remove_too_small_bounding_box_max_area, boxes, classes, scores)
+                    cfg.post_processing.remove_too_small_bounding_box_min_area, category_index, boxes, classes, scores)
                 logging.info(f'Removed too small bounding boxes, time: {sw_step}')
 
             #draw bounding box
@@ -343,18 +344,19 @@ def detect_from_directory(cfg,
             logging.info(f'Start counting')
             sw_step.restart()
             for i in range(scores.shape[0]):
-                if scores is None or scores[i] > min_score_thresh:
-                    if classes[i] in category_index.keys():
-                        class_name = category_index[classes[i]]['name']
-                        if class_name_to_csv_header_mapping:
-                            header = class_name_to_csv_header_mapping[
-                                class_name]
-                        else:
-                            header = class_name
-                        try:
-                            item_count[header] += 1
-                        except:
-                            item_count[header] = 1
+                class_name = category_index[classes[i]]['name']
+                if scores[i] >= min_score_thresh:
+                    if class_name_to_csv_header_mapping:
+                        header = class_name_to_csv_header_mapping[
+                            class_name]
+                    else:
+                        header = class_name
+                    try:
+                        item_count[header] += 1
+                    except:
+                        item_count[header] = 1
+                else:
+                    logging.info(f'Not counting {class_name} {i}, score {scores[i]} < min_score_thresh {min_score_thresh}')
 
             pred_df = pred_df.append(item_count, ignore_index=True)
             logging.info(f'Finished counting, time: {sw_step}')
