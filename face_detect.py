@@ -50,6 +50,20 @@ def draw_bounding_box(img, pt_1, pt_2, name, distance):
                     (0, 200, 200), 2)
     return img
 
+def locate_face(img, detector):
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    results = detector.detect_faces(img_rgb)
+
+    pt_1, pt_2, distance = None, None, None
+    name = 'unknown'
+
+    for res in results:
+        if res['confidence'] < confidence_t:
+            continue
+        face, pt_1, pt_2 = get_face(img_rgb, res['box'])
+    
+    return pt_1, pt_2
+
 def detect(img ,detector,encoder,encoding_dict):
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     results = detector.detect_faces(img_rgb)
@@ -158,6 +172,8 @@ def main():
     writer = None
 
     if args.outputpath != '':
+        if not os.path.exists(os.path.dirname(args.outputpath)):
+            os.makedirs(os.path.dirname(args.outputpath))
         writer = cv2.VideoWriter(args.outputpath, cv2.VideoWriter_fourcc(*'DIVX'), fps, (width,height))
 
     detect_every_n_frame = round(fps * args.detection_interval)
@@ -210,6 +226,7 @@ def main():
                 frame = draw_bounding_box(frame, pt_1, pt_2, name, distance)
                 logging.info(f'Finished detect frame: {f}\n\tUsed time: {stopwatch}')
             else:
+                pt_1, pt_2 = locate_face(frame, face_detector)
                 frame = draw_bounding_box(frame, pt_1, pt_2, name, distance)
 
         if args.show:
