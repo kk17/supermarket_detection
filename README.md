@@ -47,7 +47,15 @@ For Windows user, you need manual to install `Protobufs` first, pleas follow the
 *   Add `<PATH_TO_PB>\bin` to your `Path` environment variable (see [Environment Setup](https://tensorflow-object-detection-api-tutorial.readthedocs.io/en/latest/install.html#set-env))
 
 #### Install git bash shell for running bash script
-[Git for Windows](https://gitforwindows.org/)
+
+1. Install [Git for Windows](https://gitforwindows.org/)
+2. Open anaconda prompt and run `conda init bash`
+3. Open bash prompt
+   * Navigate to anaconda installation folder `/etc/profile.d` 
+   * `touch ~/.bashrc`
+   * `echo ". '${PWD}'/conda.sh" >> ~/.bashrc`
+   * `echo '. ${HOME}/.bash_profile' >> ~/.bashrc`
+
   
 ### 1. init 
 
